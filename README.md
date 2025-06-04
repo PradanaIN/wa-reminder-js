@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-# wa-reminder-js
-
-# WhatsApp Bot Reminder M\enggunakan whatsapp-web.js
-
 # WhatsApp Reminder Bot (SIGAP)
 
 ## Deskripsi Aplikasi
@@ -18,16 +12,15 @@ WhatsApp Reminder Bot (SIGAP) adalah aplikasi bot WhatsApp yang berfungsi untuk 
 
 ## Fitur Utama
 
-- Pengiriman pesan otomatis sesuai jadwal (berdasarkan hari kerja dan waktu tertentu).
-- Sistem scheduler yang menyesuaikan hari kerja dan jam pengiriman.
-- Dashboard web minimalis untuk menampilkan log aktivitas bot.
-- Tombol start dan stop bot dari dashboard.
-- Mode tampilan tema gelap (dark mode) dan terang.
-- Endpoint API untuk mengirim pesan manual.
-- Endpoint keepalive untuk menjaga bot tetap aktif (terintegrasi dengan cron job atau GitHub Actions).
-- Sistem autentikasi sesi WhatsApp menggunakan `whatsapp-web.js` dan `LocalAuth`.
-- Monitoring status koneksi WhatsApp.
-- Log aktivitas bot yang mudah dipantau.
+- 🔁 Pengiriman pesan otomatis berdasarkan hari kerja dan waktu yang ditentukan.
+- 📅 Scheduler pintar yang menyesuaikan hari kerja (Senin–Jumat).
+- 📋 Pengambilan daftar kontak dari Google Sheets.
+- 🖥️ Dashboard web sederhana dengan tampilan dark/light mode.
+- ▶️ Tombol start/stop bot dari dashboard.
+- 🔌 Endpoint API untuk pengiriman manual dan `keepalive` ping.
+- 🔐 Autentikasi sesi WhatsApp berbasis `LocalAuth`.
+- 📡 Monitoring koneksi dan log aktivitas bot secara real-time.
+- ⚠️ Deteksi kredensial dan perlindungan dari penyebaran di Git.
 
 ## Cara Membuat Aplikasi Ini
 
@@ -40,24 +33,46 @@ Aplikasi ini dibuat menggunakan:
 - UI dashboard menggunakan framework UI modern (contoh: shadcn/ui).
 - Penyimpanan sesi WhatsApp menggunakan `LocalAuth` agar sesi tersimpan secara lokal dan tidak perlu scan QR code berulang kali.
 
+## Teknologi yang Digunakan
+
+- **Node.js** — Runtime backend utama.
+- **whatsapp-web.js** — Integrasi tidak resmi dengan WhatsApp Web.
+- **Express.js** — Server API dan dashboard.
+- **Google Sheets API** — Mengambil daftar kontak secara dinamis.
+- **Moment-timezone** — Penanganan zona waktu lokal.
+- **shadcn/ui + Tailwind CSS** — Tampilan antarmuka modern (dashboard).
+- **dotenv** — Konfigurasi environment variables.
+- **GitHub Secret Scanning Protection** — Untuk keamanan repositori.
+
 ## Persiapan Environment
 
-1. Pastikan Node.js (v16 ke atas) sudah terinstall di komputer/server kamu.
-2. Clone repository ini:
+1.
+2. Pastikan Node.js (v16 ke atas) sudah terinstall di komputer/server kamu.
+3. Clone repository ini:
 
    ```bash
    git clone https://github.com/pradanain/wa-reminder.git
    cd wa-reminder
    ```
 
-3. Install dependencies
+4. Install dependencies
 
    ```
    npm install
 
    ```
 
-4. Buat file `.env` (jika perlu) untuk konfigurasi variabel environment (sesuaikan dengan kebutuhan, contoh variabel: PORT, TIMEZONE, dll).
+5. Buat file `.env` (jika perlu) untuk konfigurasi variabel environment
+
+   ```
+   PORT=3000
+   TIMEZONE=Asia/Jakarta
+   GOOGLE_CREDENTIALS_PATH=./credentials.json
+   SPREADSHEET_ID=your_google_sheet_id
+
+   ```
+
+   file `credentials.json` dari Google Cloud Console
 
 ## Menjalankan Aplikasi
 
@@ -71,23 +86,21 @@ node index.js
 - Buka browser dan akses `http://localhost:3000` untuk membuka dashboard.
 - Dashboard menampilkan log aktivitas dan tombol untuk start/stop bot.
 
-## Cara Deploy
-
-- Aplikasi ini bisa dideploy ke layanan hosting Node.js seperti Render.com, Heroku, atau VPS lain.
-- Pastikan bot tetap aktif dengan setup cron job atau GitHub Actions yang melakukan ping ke endpoint `/keepalive` setiap 10 menit.
-
 ## Struktur Folder
 
 ```
 wa-reminder/
-├── controllers/       # Logic pengiriman pesan dan scheduler
-├── jobs/              # Job yang dijalankan secara berkala (dailyJob.js)
-├── sessions/          # Penyimpanan sesi WhatsApp
-├── templates/         # Template pesan WhatsApp
-├── public/             # File frontend
-├── index.js           # Entry point aplikasi
-├── package.json       # Dependencies & scripts
-└── README.md          # Dokumentasi proyek
+├── controllers/        # Pengontrol pengiriman pesan
+├── jobs/               # Scheduler harian (dailyJob.js)
+├── public/             # Dashboard frontend
+├── sessions/           # Sesi login WhatsApp
+├── templates/          # Template pesan
+├── utils/              # Kalender, kontak, kutipan, heartbeat, dsb
+├── routes/		# Endpoint
+├── .env                # Konfigurasi environment (tidak di-commit)
+├── credentials.json    # Google API credential (jangan di-commit)
+├── index.js            # Entry point utama
+└── README.md
 
 ```
 
@@ -96,5 +109,3 @@ wa-reminder/
 - Aplikasi ini menggunakan `whatsapp-web.js` yang merupakan library tidak resmi, jadi ada kemungkinan ada batasan atau perubahan dari pihak WhatsApp yang mempengaruhi bot.
 - Pastikan koneksi internet stabil agar bot bisa berjalan lancar.
 - Gunakan dengan bijak dan pastikan sesuai dengan kebijakan WhatsApp.
-
-> > > > > > > 1a724dc (first deployment)
