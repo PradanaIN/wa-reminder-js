@@ -1,0 +1,7 @@
+2025/06/04-10:18:36.959 f338 Reusing MANIFEST C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/06/04-10:18:36.959 f338 Recovering log #175
+2025/06/04-10:18:36.992 f338 Reusing old log C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000175.log 
+2025/06/04-10:18:36.992 f338 Delete type=2 #172
+2025/06/04-10:18:36.992 f338 Delete type=2 #173
+2025/06/04-10:18:39.347 f338 Manual compaction at level-0 from '\x00\x1e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1f\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/06/04-10:18:39.347 f338 Manual compaction at level-1 from '\x00\x1e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1f\x00\x00\x00' @ 0 : 0; will stop at (end)

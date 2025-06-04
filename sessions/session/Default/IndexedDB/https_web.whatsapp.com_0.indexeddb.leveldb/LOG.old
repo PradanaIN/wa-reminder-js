@@ -1,0 +1,17 @@
+2025/06/04-10:15:20.296 e9ec Reusing MANIFEST C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/06/04-10:15:20.297 e9ec Recovering log #170
+2025/06/04-10:15:20.352 e9ec Reusing old log C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000170.log 
+2025/06/04-10:15:20.353 e9ec Delete type=2 #167
+2025/06/04-10:15:20.353 e9ec Delete type=2 #168
+2025/06/04-10:15:25.157 e9ec Level-0 table #176: started
+2025/06/04-10:15:25.166 e9ec Level-0 table #176: 194740 bytes OK
+2025/06/04-10:15:25.167 e9ec Delete type=0 #170
+2025/06/04-10:15:25.167 e9ec Manual compaction at level-0 from '\x00\x1d\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1e\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/06/04-10:15:25.168 f504 Manual compaction at level-1 from '\x00\x1d\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1e\x00\x00\x00' @ 0 : 0; will stop at '\x00\x1d\x00\x00\x05' @ 678594 : 1
+2025/06/04-10:15:25.168 f504 Compacting 1@1 + 2@2 files
+2025/06/04-10:15:25.252 f504 Generated table #177@1: 30021 keys, 2201315 bytes
+2025/06/04-10:15:25.305 f504 Generated table #178@1: 24801 keys, 683740 bytes
+2025/06/04-10:15:25.305 f504 Compacted 1@1 + 2@2 files => 2885055 bytes
+2025/06/04-10:15:25.305 f504 compacted to: files[ 0 0 2 0 0 0 0 ]
+2025/06/04-10:15:25.306 f504 Delete type=2 #176
+2025/06/04-10:15:25.306 f504 Manual compaction at level-1 from '\x00\x1d\x00\x00\x05' @ 678594 : 1 .. '\x00\x1e\x00\x00\x00' @ 0 : 0; will stop at (end)
