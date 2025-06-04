@@ -13,4 +13,4 @@ jobs:
       - name: Ping Keepalive Endpoint
         run: |
           echo "🔔 Pinging keepalive endpoint..."
-          curl -fsS --retry 3 https://your-domain.com/keepalive
+          curl -fsS --retry 3 https://sigap.databenuanta.id/keepalive

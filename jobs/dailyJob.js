@@ -1,8 +1,6 @@
 const moment = require("moment-timezone");
-const { checkWorkDay } = require("../controllers/scheduler");
-const { sendMessagesToAll } = require("../controllers/sender");
-
-const TIMEZONE = "Asia/Makassar";
+const { isWorkDay, TIMEZONE } = require("../utils/calendar");
+const { sendMessagesToAll } = require("../controllers/messageController");
 
 async function runDailyJob(client, addLog = console.log) {
   addLog("🚀 Memulai job harian...");
@@ -10,8 +8,8 @@ async function runDailyJob(client, addLog = console.log) {
   const now = moment().tz(TIMEZONE);
   const weekday = now.isoWeekday();
 
-  const isWorkDay = await checkWorkDay();
-  if (!isWorkDay) {
+  const isWorkDayToday = isWorkDay(undefined, addLog);
+  if (!isWorkDayToday) {
     addLog(
       `Hari ini (${now.format(
         "YYYY-MM-DD"
@@ -22,8 +20,8 @@ async function runDailyJob(client, addLog = console.log) {
 
   let targetHour, targetMinute;
   if ([1, 2, 3, 4].includes(weekday)) {
-    targetHour = 10;
-    targetMinute = 20;
+    targetHour = 15;
+    targetMinute = 59;
   } else if (weekday === 5) {
     targetHour = 16;
     targetMinute = 29;

@@ -3,147 +3,62 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/static/logo.png" />
     <title>Dashboard WA Reminder Bot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-        background: #f9fafb;
-        color: #111827;
-        transition: background-color 0.3s, color 0.3s;
-      }
-      body.dark {
-        background: #0f172a; /* slate-900 */
-        color: #e0e7ff; /* slate-200 */
-      }
-      #log {
-        font-family: monospace;
-        padding: 1rem;
-        height: 300px;
-        overflow-y: scroll;
-        border-radius: 0.375rem;
-        white-space: pre-wrap;
-        background: #1e293b; /* slate-800 */
-        color: #f8fafc; /* slate-50 */
-        transition: background-color 0.3s, color 0.3s;
-      }
-      body.dark #log {
-        background: #334155; /* slate-700 */
-        color: #e0e7ff; /* slate-200 */
-      }
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-      .toggle-darkmode {
-        cursor: pointer;
-        background: #4b5563; /* gray-600 */
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        user-select: none;
-        transition: background-color 0.3s;
-      }
-      .toggle-darkmode:hover {
-        background: #374151; /* gray-700 */
-      }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <!-- Font Awesome 6 CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </head>
   <body>
     <div class="max-w-4xl mx-auto p-6">
-      <h1 class="text-3xl font-semibold mb-6">📋 Dashboard WA Reminder Bot</h1>
+      <h1 class="text-3xl font-semibold mb-6">📋 Dashboard Reminder Bot WA</h1>
 
       <div class="flex items-center justify-between mb-4">
         <div>
           <span>Status Bot: </span>
           <span id="status" class="font-bold text-lg"></span>
         </div>
-        <button id="toggleDarkMode" class="toggle-darkmode">
-          Toggle Dark Mode
-        </button>
+        <div
+          class="toggle-darkmode"
+          id="toggleDarkMode"
+          aria-label="Toggle dark mode"
+        >
+          <span class="icon sun"><i class="fa-solid fa-sun"></i></span>
+          <span class="slider"></span>
+          <span class="icon moon"><i class="fa-solid fa-moon"></i></span>
+        </div>
       </div>
 
       <div class="space-x-2 mb-8">
-        <button
-          id="startBtn"
-          class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
-        >
-          Start Bot
-        </button>
-        <button
-          id="stopBtn"
-          class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
-        >
-          Stop Bot
-        </button>
+        <button id="startBtn" class="btn-start">Start Bot</button>
+        <button id="stopBtn" class="btn-stop">Stop Bot</button>
       </div>
 
       <h2 class="text-xl font-semibold mb-2">📄 Log Aktivitas</h2>
       <pre id="log"></pre>
+
+      <div id="qrContainer" class="mb-6 hidden">
+        <h2 class="text-xl font-semibold mb-2">📱 QR Code Login</h2>
+        <canvas id="qrCanvas"></canvas>
+      </div>
     </div>
 
-    <script>
-      const statusEl = document.getElementById("status");
-      const logEl = document.getElementById("log");
-      const startBtn = document.getElementById("startBtn");
-      const stopBtn = document.getElementById("stopBtn");
-      const toggleDarkModeBtn = document.getElementById("toggleDarkMode");
+    <div id="confirmModal" class="modal hidden">
+      <div class="modal-content">
+        <h2 class="modal-title">Konfirmasi</h2>
+        <p class="modal-message">Apakah Anda yakin ingin menghentikan bot?</p>
+        <div class="modal-actions">
+          <button id="cancelStop" class="btn-cancel">Batal</button>
+          <button id="confirmStop" class="btn-confirm">Ya, Stop</button>
+        </div>
+      </div>
+    </div>
 
-      // Dark mode setup
-      function setDarkMode(on) {
-        if (on) {
-          document.body.classList.add("dark");
-          localStorage.setItem("darkMode", "true");
-          toggleDarkModeBtn.textContent = "Light Mode";
-        } else {
-          document.body.classList.remove("dark");
-          localStorage.setItem("darkMode", "false");
-          toggleDarkModeBtn.textContent = "Dark Mode";
-        }
-      }
-
-      // Load preferred mode from localStorage
-      const preferredDark = localStorage.getItem("darkMode") === "true";
-      setDarkMode(preferredDark);
-
-      toggleDarkModeBtn.addEventListener("click", () => {
-        const isDark = document.body.classList.contains("dark");
-        setDarkMode(!isDark);
-      });
-
-      async function fetchStatus() {
-        const res = await fetch("/bot/status");
-        const data = await res.json();
-        statusEl.textContent = data.active ? "🟢 AKTIF" : "🔴 NONAKTIF";
-        startBtn.disabled = data.active;
-        stopBtn.disabled = !data.active;
-      }
-
-      async function fetchLogs() {
-        const res = await fetch("/logs");
-        const data = await res.json();
-        logEl.textContent = data.logs.join("\n");
-        logEl.scrollTop = logEl.scrollHeight;
-      }
-
-      startBtn.addEventListener("click", async () => {
-        await fetch("/bot/start", { method: "POST" });
-        await fetchStatus();
-      });
-
-      stopBtn.addEventListener("click", async () => {
-        await fetch("/bot/stop", { method: "POST" });
-        await fetchStatus();
-      });
-
-      setInterval(() => {
-        fetchStatus();
-        fetchLogs();
-      }, 3000);
-
-      fetchStatus();
-      fetchLogs();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="/static/app.js"></script>
   </body>
 </html>
