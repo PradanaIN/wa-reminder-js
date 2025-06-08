@@ -1,17 +1,17 @@
 const moment = require("moment-timezone");
-const { isWorkDay, TIMEZONE } = require("../utils/calendar");
+const { isWorkDayHybrid, TIMEZONE } = require("../utils/calendar");
 const { sendMessagesToAll } = require("../controllers/messageController");
 
 async function runDailyJob(client, addLog = console.log) {
-  addLog("🚀 Memulai job harian...");
+  addLog("[Bot] 🚀 Memulai job harian...");
 
   const now = moment().tz(TIMEZONE);
   const weekday = now.isoWeekday();
 
-  const isWorkDayToday = isWorkDay(undefined, addLog);
+  const isWorkDayToday = await isWorkDayHybrid(addLog);
   if (!isWorkDayToday) {
     addLog(
-      `Hari ini (${now.format(
+      `[Bot] Hari ini (${now.format(
         "YYYY-MM-DD"
       )}) bukan hari kerja. Tidak mengirim pesan.`
     );
@@ -20,13 +20,13 @@ async function runDailyJob(client, addLog = console.log) {
 
   let targetHour, targetMinute;
   if ([1, 2, 3, 4].includes(weekday)) {
-    targetHour = 15;
-    targetMinute = 59;
+    targetHour = 23;
+    targetMinute = 54;
   } else if (weekday === 5) {
     targetHour = 16;
     targetMinute = 29;
   } else {
-    addLog("Hari ini bukan hari kerja (Sabtu/Minggu).");
+    addLog("[Bot] Hari ini bukan hari kerja (Sabtu/Minggu).");
     return;
   }
 
@@ -38,13 +38,15 @@ async function runDailyJob(client, addLog = console.log) {
     .millisecond(0);
 
   if (now.isAfter(targetTime)) {
-    addLog("Waktu pengiriman sudah lewat hari ini, menunggu keesokan hari...");
+    addLog(
+      "[Bot] Waktu pengiriman sudah lewat hari ini, menunggu keesokan hari..."
+    );
     return;
   }
 
   const delayMs = targetTime.diff(now);
   addLog(
-    `Menunggu sampai waktu pengiriman: ${targetTime.format(
+    `[Bot] Menunggu sampai waktu pengiriman: ${targetTime.format(
       "YYYY-MM-DD HH:mm:ss"
     )}`
   );
@@ -53,7 +55,7 @@ async function runDailyJob(client, addLog = console.log) {
 
   await sendMessagesToAll(client, addLog);
 
-  addLog("✅ Selesai mengirim semua pesan.");
+  addLog("[Bot] ✅ Selesai mengirim semua pesan.");
 }
 
 module.exports = { runDailyJob };

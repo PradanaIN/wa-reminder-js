@@ -1,3 +1,8 @@
 node_modules/
 .env
-credentials.json
+config/*.json
+sessions/
+logs/
+.github/
+.wwebjs_auth/
+.wwebjs_cache/

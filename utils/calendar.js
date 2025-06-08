@@ -1,4 +1,5 @@
 const moment = require("moment-timezone");
+const { getTodayIsHoliday } = require("../services/calendarHoliday");
 
 const LIBURAN = new Set([
   "2025-01-01",
@@ -36,9 +37,9 @@ const CUTI_BERSAMA = new Set([
 const TIMEZONE = "Asia/Makassar";
 
 /**
- * Mengecek apakah hari ini hari kerja (bukan weekend, libur, atau cuti bersama)
- * @param {moment.Moment} date - Tanggal yang dicek (default: sekarang)
- * @param {Function} addLog - Fungsi logging opsional
+ * Cek apakah tanggal tertentu adalah hari kerja berdasarkan hardcoded
+ * @param {moment.Moment} date
+ * @param {Function} addLog
  * @returns {boolean}
  */
 function isWorkDay(date = moment().tz(TIMEZONE), addLog = () => {}) {
@@ -51,12 +52,45 @@ function isWorkDay(date = moment().tz(TIMEZONE), addLog = () => {}) {
   }
 
   if (LIBURAN.has(todayStr) || CUTI_BERSAMA.has(todayStr)) {
-    addLog(`[Calendar] ${todayStr} adalah hari libur/cuti bersama.`);
+    addLog(`[Calendar] ${todayStr} adalah hari libur/cuti bersama (lokal).`);
     return false;
   }
 
-  addLog(`[Calendar] ${todayStr} adalah hari kerja.`);
+  addLog(`[Calendar] ${todayStr} adalah hari kerja (lokal).`);
   return true;
 }
 
-module.exports = { isWorkDay, TIMEZONE };
+/**
+ * Versi hybrid: kombinasi lokal dan Google Calendar
+ * @param {Function} addLog - fungsi logging opsional
+ * @returns {Promise<boolean>}
+ */
+async function isWorkDayHybrid(addLog = () => {}) {
+  const now = moment().tz(TIMEZONE);
+
+  if (!isWorkDay(now, addLog)) {
+    return false;
+  }
+
+  try {
+    const events = await getTodayIsHoliday();
+    if (events.length > 0) {
+      addLog(
+        `[Calendar] ${now.format(
+          "YYYY-MM-DD"
+        )} ditemukan libur dari Google Calendar: ${events
+          .map((e) => e.summary)
+          .join(", ")}`
+      );
+      return false;
+    }
+  } catch (err) {
+    addLog(
+      `[Calendar] ⚠️ Gagal mengakses Google Calendar. Mengandalkan data lokal.`
+    );
+  }
+
+  return true;
+}
+
+module.exports = { isWorkDay, isWorkDayHybrid, TIMEZONE };

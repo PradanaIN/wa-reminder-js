@@ -9,13 +9,23 @@ const {
 const router = express.Router();
 
 router.post("/start", async (req, res) => {
-  await startBot();
-  res.send({ success: true, message: "Bot diaktifkan." });
+  try {
+    await startBot();
+    res.json({ message: "Bot berhasil diaktifkan." });
+  } catch (e) {
+    console.error("[Bot Start Error]", e);
+    res.status(500).json({ message: "Gagal mengaktifkan bot." });
+  }
 });
 
 router.post("/stop", async (req, res) => {
-  await stopBot();
-  res.send({ success: true, message: "Bot dinonaktifkan." });
+  try {
+    await stopBot();
+    res.json({ message: "Bot berhasil dihentikan." });
+  } catch (e) {
+    console.error("[Bot Stop Error]", e);
+    res.status(500).json({ message: "Gagal menghentikan bot." });
+  }
 });
 
 router.get("/status", (req, res) => {

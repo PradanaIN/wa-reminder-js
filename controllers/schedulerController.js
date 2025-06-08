@@ -1,7 +1,7 @@
 const moment = require("moment-timezone");
 const { runDailyJob } = require("../jobs/dailyJob");
 const { startHeartbeat } = require("../utils/heartbeat");
-const { isWorkDay, TIMEZONE } = require("../utils/calendar");
+const { isWorkDayHybrid, TIMEZONE } = require("../utils/calendar");
 
 let jobInterval = null;
 
@@ -16,11 +16,11 @@ function startScheduler(client, addLog, isBotActiveRef) {
 
   jobInterval = setInterval(async () => {
     const now = moment().tz(TIMEZONE).format("YYYY-MM-DD HH:mm:ss");
-    addLog(`[⏰ Scheduler] Mengecek jadwal job (${now})`);
+    addLog(`[Scheduler] Mengecek jadwal job (${now})`);
 
     try {
       if (isBotActiveRef()) {
-        if (isWorkDay(undefined, addLog)) {
+        if (await isWorkDayHybrid(addLog)) {
           await runDailyJob(client, addLog);
         } else {
           addLog("[Scheduler] Melewati job karena bukan hari kerja.");
@@ -36,11 +36,12 @@ function startScheduler(client, addLog, isBotActiveRef) {
 
 function stopScheduler(addLog) {
   if (jobInterval) {
+    addLog("[Sistem] ⏹️ Menghentikan scheduler...");
     clearInterval(jobInterval);
     jobInterval = null;
-    addLog("[Scheduler] Scheduler berhasil dihentikan.");
+    addLog("[Sistem] ⏹️ Scheduler berhasil dihentikan.");
   } else {
-    addLog("[Scheduler] Scheduler belum berjalan.");
+    addLog("[Sistem] ⏹️ Scheduler berhasil dihentikan.");
   }
 }
 

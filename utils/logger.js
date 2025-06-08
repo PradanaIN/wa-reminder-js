@@ -1,5 +1,6 @@
 const { createLogger, format, transports } = require("winston");
 const path = require("path");
+const DailyRotateFile = require("winston-daily-rotate-file");
 
 function setupLogger(name) {
   return createLogger({
@@ -12,8 +13,11 @@ function setupLogger(name) {
       )
     ),
     transports: [
-      new transports.File({
-        filename: path.join(__dirname, `../logs/${name}.log`),
+      new DailyRotateFile({
+        filename: path.join(__dirname, `../logs/${name}-%DATE%.log`),
+        datePattern: "YYYY-MM-DD",
+        maxSize: "20m",
+        maxFiles: "14d", // simpan log 14 hari terakhir
       }),
     ],
   });
