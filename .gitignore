@@ -6,3 +6,4 @@ logs/
 .github/
 .wwebjs_auth/
 .wwebjs_cache/
+.github/workflows/
