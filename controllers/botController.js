@@ -6,8 +6,6 @@ const { startScheduler, stopScheduler } = require("./schedulerController");
 const { stopHeartbeat } = require("../utils/heartbeat");
 const { addLog } = require("./logController");
 const { emitStatusUpdate, emitQrUpdate } = require("../utils/socketHandler");
-const e = require("express");
-const { add } = require("winston");
 
 let client = null;
 let latestQR = null;
@@ -91,25 +89,39 @@ async function startBot() {
   addLog("[Sistem] ✅ Bot berhasil diaktifkan.");
 }
 
-async function stopBot() {
+/**
+ * Hentikan bot, scheduler, dan heartbeat.
+ * @param {Object} logParts - Pengaturan log: { scheduler: true, heartbeat: true, bot: true }
+ */
+async function stopBot(
+  logParts = { scheduler: true, heartbeat: true, bot: true }
+) {
   if (!client) {
-    addLog("[Sistem] ⚠️ Bot belum aktif.");
+    if (logParts.bot) addLog("[Sistem] ⚠️ Bot belum aktif.");
     return;
   }
 
   try {
-    stopScheduler(addLog);
-    addLog("[Sistem] 💓 Menghentikan heartbeat...");
+    // Stop scheduler
+    if (stopScheduler.constructor.name === "AsyncFunction") {
+      await stopScheduler(logParts.scheduler ? addLog : () => {});
+    } else {
+      stopScheduler(logParts.scheduler ? addLog : () => {});
+    }
+
+    // Stop heartbeat
+    if (logParts.heartbeat) addLog("[Sistem] 💓 Menghentikan heartbeat...");
     stopHeartbeat();
-    addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");
+    if (logParts.heartbeat)
+      addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");
 
+    // Stop bot client
     await client.destroy();
-
     client = null;
     latestQR = null;
     botActive = false;
 
-    addLog("[Sistem] 🤖 Bot dinonaktifkan.");
+    if (logParts.bot) addLog("[Sistem] 🤖 Bot dinonaktifkan.");
     emitStatusUpdate(false);
   } catch (err) {
     addLog(`[Sistem] ❌ Gagal menghentikan bot: ${err.message}`);

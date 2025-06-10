@@ -20,8 +20,8 @@ async function runDailyJob(client, addLog = console.log) {
 
   let targetHour, targetMinute;
   if ([1, 2, 3, 4].includes(weekday)) {
-    targetHour = 23;
-    targetMinute = 54;
+    targetHour = 15;
+    targetMinute = 29;
   } else if (weekday === 5) {
     targetHour = 16;
     targetMinute = 29;

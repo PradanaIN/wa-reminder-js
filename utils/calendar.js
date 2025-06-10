@@ -67,30 +67,29 @@ function isWorkDay(date = moment().tz(TIMEZONE), addLog = () => {}) {
  */
 async function isWorkDayHybrid(addLog = () => {}) {
   const now = moment().tz(TIMEZONE);
-
-  if (!isWorkDay(now, addLog)) {
-    return false;
-  }
+  const todayStr = now.format("YYYY-MM-DD");
 
   try {
     const events = await getTodayIsHoliday();
     if (events.length > 0) {
       addLog(
-        `[Calendar] ${now.format(
-          "YYYY-MM-DD"
-        )} ditemukan libur dari Google Calendar: ${events
+        `[Calendar] ${todayStr} ditemukan libur (Google Calendar): ${events
           .map((e) => e.summary)
           .join(", ")}`
       );
       return false;
     }
+    addLog(`[Calendar] ${todayStr} adalah hari kerja (Google Calendar).`);
+    return true;
   } catch (err) {
     addLog(
       `[Calendar] ⚠️ Gagal mengakses Google Calendar. Mengandalkan data lokal.`
     );
+    addLog(`[Calendar] Error: ${err.message}`);
   }
 
-  return true;
+  // Fallback: gunakan pengecekan lokal
+  return isWorkDay(now, addLog);
 }
 
 module.exports = { isWorkDay, isWorkDayHybrid, TIMEZONE };

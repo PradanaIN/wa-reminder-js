@@ -69,31 +69,45 @@ process.on("unhandledRejection", (reason, promise) => {
 
 // Graceful shutdown saat Ctrl+C ditekan
 process.on("SIGINT", async () => {
-  addLog("[Sistem] Menerima sinyal SIGINT, mematikan server...");
+  try {
+    await addLog("[Sistem] Menerima sinyal SIGINT, mematikan server.");
 
-  // Jika stopScheduler async, tunggu selesai
-  if (stopScheduler.constructor.name === "AsyncFunction") {
-    await stopScheduler(addLog);
-  } else {
-    stopScheduler(addLog);
+    await addLog("[Sistem] 🤖 Memeriksa status bot...");
+    if (isBotActive()) {
+      await addLog("[Sistem] 🤖 Bot aktif, menghentikan bot...");
+      const botController = require("./controllers/botController");
+      await botController.stopBot({
+        scheduler: false,
+        heartbeat: false,
+        bot: true,
+      });
+
+      // Stop scheduler
+      if (stopScheduler.constructor.name === "AsyncFunction") {
+        await stopScheduler(addLog);
+      } else {
+        stopScheduler(addLog);
+      }
+
+      // Stop heartbeat
+      await addLog("[Sistem] 💓 Menghentikan heartbeat...");
+      stopHeartbeat();
+      await addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");
+
+      await addLog("[Sistem] 🤖 Bot berhasil dihentikan.");
+    } else {
+      await addLog("[Sistem] 🤖 Bot tidak aktif.");
+    }
+
+    await addLog("[Sistem] 🛑 Menonaktifkan server...");
+    await addLog("[Sistem] 🛑 Server tidak aktif.");
+
+    console.log("[Debug] Menunggu sebelum shutdown...");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log("[Debug] Shutdown.");
+  } catch (err) {
+    console.error("[SIGINT] ❌ Terjadi kesalahan saat shutdown:", err);
+  } finally {
+    process.exit(0);
   }
-
-  addLog("[Sistem] 💓 Menghentikan heartbeat...");
-  stopHeartbeat();
-  addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");
-
-  addLog("[Sistem] 🤖 Memeriksa status bot...");
-  if (isBotActive()) {
-    addLog("[Sistem] 🤖 Bot aktif, menghentikan bot...");
-    const botController = require("./controllers/botController");
-    await botController.stopBot();
-    addLog("[Sistem] 🤖 Bot berhasil dihentikan.");
-  } else {
-    addLog("[Sistem] 🤖 Bot tidak aktif.");
-  }
-
-  addLog("[Sistem] 🛑 Server tidak aktif.");
-
-  // Delay sedikit sebelum exit supaya log sempat terkirim ke socket
-  setTimeout(() => process.exit(0), 500);
 });

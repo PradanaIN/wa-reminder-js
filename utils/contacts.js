@@ -1,6 +1,7 @@
+const path = require("path");
 const { google } = require("googleapis");
 const auth = new google.auth.GoogleAuth({
-  keyFile: "../config/sheets_service_account.json",
+  keyFile: path.resolve(__dirname, "../config/sheets_service_account.json"),
   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
 });
 

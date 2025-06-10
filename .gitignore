@@ -1,5 +1,6 @@
 node_modules/
 .env
+.env.production
 config/*.json
 sessions/
 logs/
@@ -7,3 +8,6 @@ logs/
 .wwebjs_auth/
 .wwebjs_cache/
 .github/workflows/
+.dockerignore
+docker-compose.yml
+Dockerfile
