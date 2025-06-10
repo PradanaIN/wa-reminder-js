@@ -1,4 +1,0 @@
-2025/06/10-09:24:25.721 1388c Reusing MANIFEST C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/06/10-09:24:25.723 1388c Recovering log #612
-2025/06/10-09:24:25.890 1388c Reusing old log C:\projects\wa-reminder\sessions\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000612.log 
-2025/06/10-09:24:28.202 1926c Manual compaction at level-0 from '\x00i\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00j\x00\x00\x00' @ 0 : 0; will stop at (end)
