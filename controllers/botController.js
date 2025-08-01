@@ -10,6 +10,9 @@ const { emitStatusUpdate, emitQrUpdate } = require("../utils/socketHandler");
 let client = null;
 let latestQR = null;
 let botActive = false;
+let isRestarting = false;
+let isClientReady = false;
+let statusCheckerInterval = null;
 
 async function startBot() {
   if (client) {
@@ -32,67 +35,71 @@ async function startBot() {
       latestQR = qr;
       qrcode.generate(qr, { small: true });
       addLog("📱 Scan QR code ini dengan WhatsApp Anda.");
-      emitQrUpdate(qr); // <-- Emit QR ke client
+      emitQrUpdate(qr);
     }
   });
 
   client.on("ready", async () => {
     botActive = true;
+    isClientReady = true;
     addLog("[Bot] ✅ WhatsApp Client is ready!");
-    emitStatusUpdate(true); // <-- Emit status aktif ke client
+    emitStatusUpdate(true);
+
+    startClientStatusChecker(); // ✅ Auto-check client status
 
     try {
       await runDailyJob(client, addLog);
     } catch (err) {
-      addLog(`[Startup Job] Gagal menjalankan job harian: ${err.message}`);
+      addLog(`[Startup Job] Gagal job harian: ${err.message}`);
     }
+
     startScheduler(client, addLog, () => botActive);
   });
 
   client.on("auth_failure", async () => {
-    addLog("[Sistem] ❌ Autentikasi gagal. Menghapus sesi dan mengulang...");
+    addLog("[Sistem] ❌ Autentikasi gagal. Reset sesi...");
     const fs = require("fs");
     const sessionPath = path.join(__dirname, "..", "sessions");
     fs.rmSync(sessionPath, { recursive: true, force: true });
     client = null;
     botActive = false;
-    emitStatusUpdate(false); // <-- Emit status nonaktif
+    isClientReady = false;
+    emitStatusUpdate(false);
   });
 
   client.on("disconnected", async (reason) => {
-    addLog(
-      `[Sistem] ⚠️ Client disconnected: ${reason}. Mencoba restart bot...`
-    );
-    botActive = false;
-    latestQR = null;
+    if (isRestarting) return;
+    isRestarting = true;
+
+    addLog(`[Sistem] ⚠️ Client disconnected: ${reason}. Mencoba restart...`);
     client = null;
-    emitStatusUpdate(false); // <-- Emit status nonaktif
+    botActive = false;
+    isClientReady = false;
+    latestQR = null;
+    emitStatusUpdate(false);
+
     try {
       await startBot();
     } catch (err) {
       addLog(`[Sistem] ❌ Gagal restart bot: ${err.message}`);
+    } finally {
+      isRestarting = false;
     }
   });
 
-  addLog("[Sistem] 🔄 Menginisialisasi WhatsApp client...");
-
   try {
+    addLog("[Sistem] 🔄 Inisialisasi WhatsApp client...");
     await client.initialize();
+    addLog("[Sistem] ✅ Bot aktif.");
   } catch (err) {
-    addLog(`[Sistem] ❌ Gagal inisialisasi WhatsApp client: ${err.message}`);
-    console.error(err);
+    addLog(`[Sistem] ❌ Gagal inisialisasi client: ${err.message}`);
     client = null;
     botActive = false;
+    isClientReady = false;
     emitStatusUpdate(false);
-    return;
   }
-  addLog("[Sistem] ✅ Bot berhasil diaktifkan.");
 }
 
-/**
- * Hentikan bot, scheduler, dan heartbeat.
- * @param {Object} logParts - Pengaturan log: { scheduler: true, heartbeat: true, bot: true }
- */
 async function stopBot(
   logParts = { scheduler: true, heartbeat: true, bot: true }
 ) {
@@ -102,30 +109,53 @@ async function stopBot(
   }
 
   try {
-    // Stop scheduler
-    if (stopScheduler.constructor.name === "AsyncFunction") {
-      await stopScheduler(logParts.scheduler ? addLog : () => {});
-    } else {
-      stopScheduler(logParts.scheduler ? addLog : () => {});
+    if (logParts.scheduler) await stopScheduler(addLog);
+    if (logParts.heartbeat) {
+      addLog("[Sistem] 💓 Menghentikan heartbeat...");
+      stopHeartbeat();
     }
 
-    // Stop heartbeat
-    if (logParts.heartbeat) addLog("[Sistem] 💓 Menghentikan heartbeat...");
-    stopHeartbeat();
-    if (logParts.heartbeat)
-      addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");
+    stopClientStatusChecker(); // ✅ Hentikan pengecekan silent crash
 
-    // Stop bot client
     await client.destroy();
     client = null;
     latestQR = null;
     botActive = false;
+    isClientReady = false;
 
     if (logParts.bot) addLog("[Sistem] 🤖 Bot dinonaktifkan.");
     emitStatusUpdate(false);
   } catch (err) {
-    addLog(`[Sistem] ❌ Gagal menghentikan bot: ${err.message}`);
+    addLog(`[Sistem] ❌ Gagal stop bot: ${err.message}`);
     throw err;
+  }
+}
+
+function startClientStatusChecker(intervalMs = 60000) {
+  if (statusCheckerInterval) clearInterval(statusCheckerInterval);
+
+  statusCheckerInterval = setInterval(async () => {
+    if (!client) return;
+
+    try {
+      const state = await client.getState();
+      if (state !== "CONNECTED") {
+        addLog(`[Sistem] ⚠️ Client state: ${state}. Restarting bot...`);
+        await stopBot({ scheduler: false, heartbeat: false, bot: true });
+        await startBot();
+      }
+    } catch (err) {
+      addLog(`[Sistem] ❌ Gagal cek client state: ${err.message}`);
+      await stopBot({ scheduler: false, heartbeat: false, bot: true });
+      await startBot();
+    }
+  }, intervalMs);
+}
+
+function stopClientStatusChecker() {
+  if (statusCheckerInterval) {
+    clearInterval(statusCheckerInterval);
+    statusCheckerInterval = null;
   }
 }
 
@@ -134,11 +164,17 @@ function getQR() {
 }
 
 function getClient() {
-  return client;
+  return isClientReady && client ? client : null;
 }
 
 function isBotActive() {
   return botActive;
 }
 
-module.exports = { startBot, stopBot, getQR, getClient, isBotActive };
+module.exports = {
+  startBot,
+  stopBot,
+  getQR,
+  getClient,
+  isBotActive,
+};

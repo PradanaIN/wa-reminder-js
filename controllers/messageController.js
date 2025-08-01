@@ -4,7 +4,7 @@ const { quotes } = require("../utils/quotes");
 const { resetHeartbeat } = require("../utils/heartbeat");
 const { loadContactsFromSheets } = require("../utils/contacts");
 
-// Load contacts
+// Load kontak dari Google Sheets atau sumber lainnya
 async function loadContacts() {
   try {
     const contacts = await loadContactsFromSheets();
@@ -19,7 +19,7 @@ async function loadContacts() {
   }
 }
 
-// Load template
+// Load template dari file
 function loadMessageTemplate() {
   try {
     return fs.readFileSync(
@@ -32,15 +32,18 @@ function loadMessageTemplate() {
   }
 }
 
+// Ambil quote random dari daftar
 function getRandomQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
+// Kirim pesan mentah ke nomor
 async function sendMessage(number, message, client) {
   const chatId = number.includes("@c.us") ? number : `${number}@c.us`;
   await client.sendMessage(chatId, message);
 }
 
+// Kirim pesan berdasarkan nama, template dan quote
 async function sendMessageToNumber(client, number, name, addLog = console.log) {
   try {
     const template = loadMessageTemplate();
@@ -50,24 +53,74 @@ async function sendMessageToNumber(client, number, name, addLog = console.log) {
     const chatId = number.includes("@c.us") ? number : `${number}@c.us`;
     await client.sendMessage(chatId, message);
     addLog(`[Message] ✅ Pesan berhasil dikirim ke ${name} (${number})`);
+    return true;
   } catch (err) {
-    addLog(`[Message] ❌ Gagal kirim ke ${name} (${number}): ${err.message}`);
+    addLog(`[Message] ❌ Gagal kirim ke ${name} (${number})`);
+    addLog(`[Message] ↪️ Error: ${err.name} - ${err.message}`);
+    return false;
   }
 }
 
+// Kirim pesan ke semua kontak
 async function sendMessagesToAll(client, addLog = console.log) {
+  if (!client) {
+    addLog("[Message] ❌ Client tidak tersedia.");
+    return { successCount: 0, failedCount: 0, total: 0 };
+  }
+
+  let state;
+  try {
+    state = await client.getState();
+  } catch (err) {
+    addLog("[Message] ❌ Gagal mendapatkan state client.");
+    return { successCount: 0, failedCount: 0, total: 0 };
+  }
+
+  if (state !== "CONNECTED") {
+    addLog(`[Message] ❌ Client state bukan CONNECTED: ${state}`);
+    return { successCount: 0, failedCount: 0, total: 0 };
+  }
+
   const contacts = await loadContacts();
   if (!Array.isArray(contacts) || contacts.length === 0) {
     addLog("[Message] Tidak ada kontak yang ditemukan.");
-    return;
+    return { successCount: 0, failedCount: 0, total: 0 };
   }
 
-  for (const contact of contacts) {
-    await sendMessageToNumber(client, contact.number, contact.name, addLog);
-    await delay(1500);
-  }
+  addLog(`[Message] 🔄 Mengirim pesan ke ${contacts.length} kontak...`);
 
+  let successCount = 0;
+  let failedCount = 0;
+
+  await Promise.all(
+    contacts.map(
+      (contact, index) =>
+        new Promise((resolve) => {
+          setTimeout(async () => {
+            const success = await sendMessageToNumber(
+              client,
+              contact.number,
+              contact.name,
+              addLog
+            );
+            if (success) successCount++;
+            else failedCount++;
+            resolve();
+          }, index * 1500); // Delay antar pesan
+        })
+    )
+  );
+
+  addLog(
+    `[Message] ✅ Pengiriman selesai: ${successCount} sukses, ${failedCount} gagal.`
+  );
   resetHeartbeat();
+
+  return {
+    successCount,
+    failedCount,
+    total: contacts.length,
+  };
 }
 
 function delay(ms) {

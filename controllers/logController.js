@@ -4,23 +4,32 @@ const { emitLogUpdate } = require("../utils/socketHandler");
 
 const logger = setupLogger("app");
 
-const MAX_LOG_ENTRIES = 100; // batasi jumlah log di memori
+const MAX_LOG_ENTRIES = 100;
 const logs = [];
 
-function addLog(text) {
+function addLog(text, level = "info") {
   const time = moment().format("HH:mm:ss");
   const logEntry = `[${time}] ${text}`;
 
-  // Jika sudah mencapai limit, hapus log terlama
   if (logs.length >= MAX_LOG_ENTRIES) {
     logs.shift();
   }
 
   logs.push(logEntry);
   console.log(logEntry);
-  logger.info(text); // simpan ke file log via winston
 
-  // Kirim update log via WebSocket
+  // Log ke file berdasarkan level
+  switch (level) {
+    case "error":
+      logger.error(text);
+      break;
+    case "warn":
+      logger.warn(text);
+      break;
+    default:
+      logger.info(text);
+  }
+
   emitLogUpdate(logEntry);
 }
 
@@ -28,7 +37,6 @@ function getLogs(limit = 100) {
   return logs.slice(-limit);
 }
 
-// getStats untuk mendapatkan statistik log
 function getStats() {
   const stats = {
     messagesPerDay: {},
@@ -37,22 +45,17 @@ function getStats() {
   };
 
   for (const log of logs) {
-    const matchDate = log.match(/\[(\d{4}-\d{2}-\d{2})/);
-    const date = matchDate ? matchDate[1] : "Unknown";
+    const todayStr = moment().format("YYYY-MM-DD");
 
-    if (
-      log.includes("[Bot] Pesan terkirim") ||
-      log.includes("[Bot] 🚀 Mengirim pesan")
-    ) {
-      stats.messagesPerDay[date] = (stats.messagesPerDay[date] || 0) + 1;
+    if (log.includes("Pesan") || log.includes("Mengirim ke")) {
+      stats.messagesPerDay[todayStr] =
+        (stats.messagesPerDay[todayStr] || 0) + 1;
     }
-
-    if (log.includes("❌")) {
-      stats.errorsPerDay[date] = (stats.errorsPerDay[date] || 0) + 1;
+    if (log.includes("❌") || log.includes("ERROR")) {
+      stats.errorsPerDay[todayStr] = (stats.errorsPerDay[todayStr] || 0) + 1;
     }
-
     if (log.includes("💓")) {
-      stats.uptimePerDay[date] = (stats.uptimePerDay[date] || 0) + 1;
+      stats.uptimePerDay[todayStr] = (stats.uptimePerDay[todayStr] || 0) + 1;
     }
   }
 

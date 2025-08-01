@@ -1,3 +1,5 @@
-2025/06/10-09:21:55.739 4278 Reusing MANIFEST C:\projects\wa-reminder\sessions\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/06/10-09:21:55.740 4278 Recovering log #8
-2025/06/10-09:21:55.740 4278 Reusing old log C:\projects\wa-reminder\sessions\session\Default\Local Storage\leveldb/000008.log 
+2025/07/30-15:56:31.403 1e47c Reusing MANIFEST C:\projects\wa-reminder\sessions\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/07/30-15:56:31.434 1e47c Recovering log #105
+2025/07/30-15:56:31.434 1e47c Level-0 table #108: started
+2025/07/30-15:56:31.438 1e47c Level-0 table #108: 13865 bytes OK
+2025/07/30-15:56:31.439 1e47c Delete type=0 #105

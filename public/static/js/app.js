@@ -1,9 +1,9 @@
 import { initDarkMode } from "./modeHandler.js";
 import { initBotControl } from "./botHandler.js";
-import { fetchStatus } from "./statusHandler.js";
+import { fetchStatus, updateStatus } from "./statusHandler.js";
 import { initSocket } from "./socketHandler.js";
 import { fetchLogs, appendLog, enableLogFiltering } from "./logHandler.js";
-import { initQRHandler } from "./qrHandler.js";
+import { initQRHandler, renderQR } from "./qrHandler.js";
 import { renderCharts } from "./chartHandler.js";
 import { initTabs } from "./tabHandler.js";
 import { showLoader } from "./utils.js";
@@ -13,36 +13,28 @@ document.addEventListener("DOMContentLoaded", () => {
   initDarkMode(renderCharts);
   document.body.style.visibility = "visible";
 
-  // 2. Socket.IO listeners
+  // 2. Socket.IO realtime update listeners
   initSocket(
-    (status) => {
-      console.log("[Socket.IO] Status update:", status);
-      fetchStatus();
-    },
-    (logEntry) => {
-      console.log("[Socket.IO] Log update:", logEntry);
-      appendLog(logEntry);
-    },
-    (qrData) => {
-      console.log("[Socket.IO] QR update:", qrData);
-      initQRHandler(qrData); // render QR code dari socket
-    }
+    updateStatus, // ⬅ Status langsung update UI
+    appendLog, // ⬅ Tambah 1 baris log
+    renderQR // ⬅ Tampilkan QR dari socket
   );
 
-  // 3. Bot control buttons (start/stop)
+  // 3. Tombol start/stop bot
   initBotControl(fetchStatus);
 
-  // 4. Fetch initial status, logs, QR
+  // 4. Ambil data awal: status, log, QR
   fetchStatus();
   fetchLogs();
   enableLogFiltering();
+  initQRHandler(); // hanya fetch QR awal
 
-  // 5. Render grafik awal
+  // 5. Grafik dashboard
   renderCharts();
 
-  // 6. Tab navigation
+  // 6. Navigasi tab
   initTabs();
 
-  // 7. Hide loader awal
+  // 7. Sembunyikan loading
   showLoader(false);
 });

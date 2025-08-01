@@ -1,19 +1,6 @@
 let qrContainer = null;
 let qrCanvas = null;
 
-function renderQR(data) {
-  if (!qrContainer || !qrCanvas) {
-    console.warn("Elemen QR tidak ditemukan di DOM");
-    return;
-  }
-  qrContainer.classList.remove("hidden");
-
-  QRCode.toCanvas(qrCanvas, data, { width: 256 }, (error) => {
-    if (error) console.error("Error render QR:", error);
-    else console.log("QR code berhasil dirender!");
-  });
-}
-
 export async function fetchQRCode() {
   // Delay cek elemen sampai DOM siap
   if (!qrContainer || !qrCanvas) {
@@ -49,5 +36,24 @@ export function initQRHandler() {
     qrContainer = document.getElementById("qrContainer");
     qrCanvas = document.getElementById("qrCanvas");
     fetchQRCode();
+  });
+}
+
+export function renderQR(data) {
+  if (!qrContainer || !qrCanvas) {
+    qrContainer = document.getElementById("qrContainer");
+    qrCanvas = document.getElementById("qrCanvas");
+  }
+
+  if (!qrContainer || !qrCanvas) {
+    console.warn("Elemen QR tidak ditemukan di DOM");
+    return;
+  }
+
+  qrContainer.classList.remove("hidden");
+
+  QRCode.toCanvas(qrCanvas, data, { width: 256 }, (error) => {
+    if (error) console.error("Error render QR:", error);
+    else console.log("QR code berhasil dirender dari socket!");
   });
 }

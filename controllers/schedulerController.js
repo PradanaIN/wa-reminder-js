@@ -1,48 +1,74 @@
 const moment = require("moment-timezone");
+const schedule = require("node-schedule");
 const { runDailyJob } = require("../jobs/dailyJob");
 const { startHeartbeat } = require("../utils/heartbeat");
 const { isWorkDayHybrid, TIMEZONE } = require("../utils/calendar");
 
-let jobInterval = null;
+let scheduledJob = null;
 
 function startScheduler(client, addLog, isBotActiveRef) {
-  if (jobInterval) {
-    addLog("[Scheduler] Scheduler sudah berjalan.");
+  if (scheduledJob) {
+    addLog("[Scheduler] ❗ Job sudah dijadwalkan. Tidak menjadwalkan ulang.");
     return;
   }
 
-  // addLog("[Scheduler] Menjalankan job harian tiap 20 jam.");
+  // Inisialisasi heartbeat
   startHeartbeat(addLog, TIMEZONE, moment);
 
-  jobInterval = setInterval(async () => {
+  // Ambil waktu dari .env, default 15:00
+  const timeParts = process.env.JOB_TIME?.split(":") || ["15", "00"];
+  const hour = parseInt(timeParts[0], 10) || 15;
+  const minute = parseInt(timeParts[1], 10) || 0;
+
+  const rule = new schedule.RecurrenceRule();
+  rule.tz = TIMEZONE;
+  rule.hour = hour;
+  rule.minute = minute;
+
+  const jadwalText = moment()
+    .tz(TIMEZONE)
+    .hour(hour)
+    .minute(minute)
+    .second(0)
+    .format("YYYY-MM-DD HH:mm:ss");
+
+  // Jadwalkan job harian
+  scheduledJob = schedule.scheduleJob(rule, async () => {
     const now = moment().tz(TIMEZONE).format("YYYY-MM-DD HH:mm:ss");
-    addLog(`[Scheduler] Mengecek jadwal job (${now})`);
+    addLog(`[Scheduler] ⏰ Menjalankan job pada ${now}`);
 
     try {
       if (isBotActiveRef()) {
-        if (await isWorkDayHybrid(addLog)) {
+        const isWorkday = await isWorkDayHybrid(addLog);
+        if (isWorkday) {
           await runDailyJob(client, addLog);
         } else {
-          addLog("[Scheduler] Melewati job karena bukan hari kerja.");
+          addLog("[Scheduler] 📅 Hari ini bukan hari kerja, job dilewati.");
         }
       } else {
-        addLog("[Scheduler] Bot sedang NONAKTIF. Job dilewati.");
+        addLog("[Scheduler] ⛔ Bot sedang nonaktif, job dilewati.");
       }
     } catch (err) {
-      addLog(`[Scheduler] Error saat menjalankan job: ${err.message}`);
+      addLog(`[Scheduler] ❌ Error saat menjalankan job: ${err.message}`);
     }
-  }, 20 * 60 * 60 * 1000); // 20 jam
+  });
+
+  addLog(
+    `[Scheduler] ✅ Job harian dijadwalkan pada ${jadwalText} (${TIMEZONE})`
+  );
 }
 
 function stopScheduler(addLog) {
-  if (jobInterval) {
-    addLog("[Sistem] ⏹️ Menghentikan scheduler...");
-    clearInterval(jobInterval);
-    jobInterval = null;
-    addLog("[Sistem] ⏹️ Scheduler berhasil dihentikan.");
+  if (scheduledJob) {
+    scheduledJob.cancel();
+    scheduledJob = null;
+    addLog("[Scheduler] ⏹️ Job scheduler dibatalkan.");
   } else {
-    addLog("[Sistem] ⏹️ Scheduler berhasil dihentikan.");
+    addLog("[Scheduler] ⚠️ Tidak ada job scheduler yang aktif.");
   }
 }
 
-module.exports = { startScheduler, stopScheduler };
+module.exports = {
+  startScheduler,
+  stopScheduler,
+};

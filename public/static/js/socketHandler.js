@@ -1,12 +1,22 @@
-export function initSocket(onStatusUpdate, onLogUpdate, onQrUpdate) {
+import { updateStatus } from "./statusHandler.js";
+import { appendLog } from "./logHandler.js";
+import { renderQR } from "./qrHandler.js";
+
+export function initSocket() {
   const socket = io();
 
-  socket.on("statusUpdate", onStatusUpdate);
-  socket.on("logUpdate", onLogUpdate);
-  socket.on("qrUpdate", onQrUpdate);
+  socket.on("status-update", (status) => {
+    console.log("[Socket] 🔄 Status update:", status);
+    updateStatus({ active: status });
+  });
 
-  socket.on("connect", () => console.log("[Socket.IO] Connected"));
-  socket.on("disconnect", () => console.log("[Socket.IO] Disconnected"));
+  socket.on("log-update", (line) => {
+    console.log("[Socket] 📝 Log baru:", line);
+    appendLog(line);
+  });
 
-  return socket;
+  socket.on("qr-update", (qrData) => {
+    console.log("[Socket] 📱 QR update");
+    renderQR(qrData);
+  });
 }

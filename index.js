@@ -1,18 +1,28 @@
+// === GLOBAL ERROR HANDLER ===
+process.on("uncaughtException", (err) => {
+  console.error("[UncaughtException]", err.stack || err.message);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("[UnhandledRejection]", reason?.stack || reason);
+});
+
 const express = require("express");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
-const { isBotActive } = require("./controllers/botController");
+const { isBotActive, getClient } = require("./controllers/botController");
 const { stopScheduler } = require("./controllers/schedulerController");
 const { stopHeartbeat } = require("./utils/heartbeat");
 const { addLog } = require("./controllers/logController");
 const { initSocket } = require("./utils/socketHandler");
+const { runDailyJob } = require("./jobs/dailyJob");
+
 // Inisialisasi dotenv untuk mengakses variabel lingkungan
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Cek apakah PORT sudah di-set
 
 // Create HTTP server (penting untuk Socket.IO)
 const server = http.createServer(app);
@@ -46,26 +56,34 @@ app.use(express.static(path.join(__dirname, "public")));
 const botRoutes = require("./routes/botRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const systemRoutes = require("./routes/systemRoutes");
-const { add } = require("winston");
+const templateRoutes = require("./routes/templateRoutes");
 
 app.use("/bot", botRoutes);
 app.use("/send", messageRoutes);
 app.use("/", systemRoutes);
+app.use("/template", templateRoutes);
 
 // Start server via HTTP server (bukan app.listen)
 server.listen(PORT, () => {
   addLog(`[Sistem] Aplikasi berjalan di port ${PORT}`);
 });
 
-// Handle error: uncaught exception
-process.on("uncaughtException", (err) => {
-  addLog(`[Error] Uncaught Exception: ${err.message}`);
-});
-
-// Handle error: unhandled promise rejection
-process.on("unhandledRejection", (reason, promise) => {
-  addLog(`[Error] Unhandled Rejection at: ${promise}, reason: ${reason}`);
-});
+// ✅ Tambahkan: scheduler harian otomatis jika bot aktif
+setTimeout(async () => {
+  if (isBotActive()) {
+    const client = getClient();
+    if (client) {
+      addLog("[Scheduler] ⏱ Menjadwalkan job harian...");
+      runDailyJob(client, addLog);
+    } else {
+      addLog(
+        "[Scheduler] ❌ Client bot belum tersedia, job harian tidak dijalankan."
+      );
+    }
+  } else {
+    addLog("[Scheduler] 🤖 Bot belum aktif, job harian tidak dijalankan.");
+  }
+}, 3000); // Delay supaya client siap
 
 // Graceful shutdown saat Ctrl+C ditekan
 process.on("SIGINT", async () => {
@@ -82,14 +100,12 @@ process.on("SIGINT", async () => {
         bot: true,
       });
 
-      // Stop scheduler
       if (stopScheduler.constructor.name === "AsyncFunction") {
         await stopScheduler(addLog);
       } else {
         stopScheduler(addLog);
       }
 
-      // Stop heartbeat
       await addLog("[Sistem] 💓 Menghentikan heartbeat...");
       stopHeartbeat();
       await addLog("[Sistem] 💓 Heartbeat berhasil dihentikan.");

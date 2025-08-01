@@ -2,19 +2,20 @@ let lastHeartbeatTime = Date.now();
 let intervalId = null;
 
 function startHeartbeat(addLog, TIMEZONE, moment) {
-  // Cegah double start
   if (intervalId) return;
 
   intervalId = setInterval(() => {
     const now = Date.now();
-    const halfHoursMs = 30 * 60 * 1000;
+    const diff = now - lastHeartbeatTime;
+    const minutes = Math.floor(diff / 60000);
 
-    if (now - lastHeartbeatTime >= halfHoursMs) {
-      const timestamp = moment().tz(TIMEZONE).format("YYYY-MM-DD HH:mm:ss");
-      addLog(`[💓] Bot aktif - ${timestamp}`);
-      lastHeartbeatTime = now;
-    }
-  }, 60 * 60 * 1000); // tiap jam
+    const timestamp = moment().tz(TIMEZONE).format("YYYY-MM-DD HH:mm:ss");
+    addLog(
+      `[💓] Heartbeat aktif (${minutes} menit sejak terakhir) — ${timestamp}`
+    );
+
+    lastHeartbeatTime = now;
+  }, 10 * 60 * 1000); // tiap 10 menit
 }
 
 function stopHeartbeat() {
@@ -28,8 +29,13 @@ function resetHeartbeat() {
   lastHeartbeatTime = Date.now();
 }
 
+function getLastHeartbeat() {
+  return lastHeartbeatTime;
+}
+
 module.exports = {
   startHeartbeat,
   stopHeartbeat,
   resetHeartbeat,
+  getLastHeartbeat,
 };

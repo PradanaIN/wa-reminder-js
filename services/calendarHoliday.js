@@ -1,18 +1,26 @@
 const { google } = require("googleapis");
 const { authorize } = require("./calendarAuth");
 
-async function getTodayIsHoliday() {
+/**
+ * Ambil event hari libur untuk tanggal tertentu (default: hari ini)
+ * @param {Date} [date=new Date()]
+ * @returns {Promise<Array>}
+ */
+async function getTodayIsHoliday(date = new Date()) {
   const auth = await authorize();
   const calendar = google.calendar({ version: "v3", auth });
 
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
+  // Buat rentang waktu dari jam 00:00 sampai 23:59 tanggal tsb
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
 
   const res = await calendar.events.list({
     calendarId: "en.indonesian#holiday@group.v.calendar.google.com",
-    timeMin: now.toISOString(),
-    timeMax: tomorrow.toISOString(),
+    timeMin: start.toISOString(),
+    timeMax: end.toISOString(),
     singleEvents: true,
     orderBy: "startTime",
   });

@@ -1,7 +1,10 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const moment = require("moment-timezone");
-const { getLogs, addLog, getStats } = require("../controllers/logController");
+const { getLogs, addLog } = require("../controllers/logController");
 const { getQR, isBotActive } = require("../controllers/botController");
+const { parseLogFilePerDay } = require("../utils/statParser");
 
 const router = express.Router();
 
@@ -46,9 +49,33 @@ router.get("/keepalive", (req, res) => {
 });
 
 // API Statistik
-router.get("/stats", (req, res) => {
-  const stats = getStats();
-  res.send(stats);
+router.get("/stats", async (req, res) => {
+  const logsDir = path.join(__dirname, "../logs");
+  const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".log"));
+
+  const combined = {
+    messagesPerDay: {},
+    errorsPerDay: {},
+    uptimePerDay: {},
+  };
+
+  for (const file of files) {
+    const filePath = path.join(logsDir, file);
+    const stats = await parseLogFilePerDay(filePath);
+
+    for (const [date, count] of Object.entries(stats.messagesPerDay)) {
+      combined.messagesPerDay[date] =
+        (combined.messagesPerDay[date] || 0) + count;
+    }
+    for (const [date, count] of Object.entries(stats.errorsPerDay)) {
+      combined.errorsPerDay[date] = (combined.errorsPerDay[date] || 0) + count;
+    }
+    for (const [date, hours] of Object.entries(stats.uptimePerDay)) {
+      combined.uptimePerDay[date] = (combined.uptimePerDay[date] || 0) + hours;
+    }
+  }
+
+  res.json(combined);
 });
 
 module.exports = router;
