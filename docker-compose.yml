@@ -1,0 +1,17 @@
+version: "3"
+services:
+  sigap-bot:
+    build: .
+    container_name: sigap
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./sessions:/app/sessions
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+      - ./.wwebjs_auth:/app/.wwebjs_auth
+      - ./.wwebjs_cache:/app/.wwebjs_cache
+    env_file:
+      - .env.production
+
+    restart: unless-stopped
