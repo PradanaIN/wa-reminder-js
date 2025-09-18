@@ -33,7 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCharts();
 
   // 6. Navigasi tab
-  initTabs();
+  const tabElements = {
+    tabLogBtn: document.getElementById("tabLog"),
+    tabChartBtn: document.getElementById("tabChart"),
+    tabContentLog: document.getElementById("tabContentLog"),
+    tabContentChart: document.getElementById("tabContentChart"),
+  };
+
+  if (Object.values(tabElements).every(Boolean)) {
+    initTabs(tabElements);
+  }
 
   // 7. Sembunyikan loading
   showLoader(false);

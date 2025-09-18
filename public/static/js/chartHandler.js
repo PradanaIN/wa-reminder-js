@@ -15,7 +15,10 @@ export async function renderCharts() {
     const textColor = isDark ? "#f3f4f6" : "#1f2937";
     const tooltipBg = isDark ? "#1f2937" : "#ffffff";
 
-    const ctx = document.getElementById("messagesChart").getContext("2d");
+    const canvas = document.getElementById("messagesChart");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
 
     if (chartInstance) {
       chartInstance.destroy();
