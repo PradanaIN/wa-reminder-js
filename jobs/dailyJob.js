@@ -108,8 +108,8 @@ async function scheduleNext(client, addLog) {
   const nextWorkDay = await getNextWorkDay(moment().tz(TIMEZONE), addLog);
   const weekday = nextWorkDay.isoWeekday();
 
-  const targetHour = [1, 2, 3, 4].includes(weekday) ? 16 : 16;
-  const targetMinute = [1, 2, 3, 4].includes(weekday) ? 4 : 29;
+  const targetHour = [1, 2, 3, 4].includes(weekday) ? 15 : 16;
+  const targetMinute = [1, 2, 3, 4].includes(weekday) ? 59 : 29;
 
   const targetTime = nextWorkDay
     .clone()
