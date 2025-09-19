@@ -61,8 +61,11 @@ WhatsApp Reminder Bot (SIGAP) adalah aplikasi bot WhatsApp yang berfungsi untuk 
    TIMEZONE=TIMEZONE_KAMU
    GOOGLE_CREDENTIALS_PATH=PATH_CREDNTIALS_KAMU
    SPREADSHEET_ID=ID_GOOGLE_SHEET_KAMU
+   CONTROL_API_KEY=API_KEY_KONTROL_KAMU
 
    ```
+
+   Gunakan nilai `CONTROL_API_KEY` untuk mengamankan endpoint kontrol bot dan editor template. Kunci ini wajib dikirimkan oleh klien ketika mengakses API terkait.
 
 ## Menjalankan Aplikasi
 
@@ -76,6 +79,14 @@ node index.js
 - Buka browser dan akses `http://localhost:port` untuk membuka dashboard.
 - Dashboard menampilkan log realtime, tombol start/stop bot, status koneksi, dan chart statistik.
 - Gunakan fitur filter log dan toggle dark mode di dashboard.
+
+## Autentikasi API Kontrol
+
+- Semua request ke endpoint `/bot` dan `/template` kini memerlukan API key.
+- Sertakan header `x-api-key: <CONTROL_API_KEY>` pada setiap request. Alternatifnya, gunakan header `Authorization: Bearer <CONTROL_API_KEY>`.
+- Jika header tidak dikirim, server akan mengembalikan status **401 Unauthorized**.
+- Jika kunci salah, server akan mengembalikan status **403 Forbidden**.
+- Pastikan variabel environment `CONTROL_API_KEY` terkonfigurasi di server atau file `.env` sebelum menjalankan aplikasi.
 
 ## Struktur Folder
 
