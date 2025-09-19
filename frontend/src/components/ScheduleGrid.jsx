@@ -40,14 +40,14 @@ export function ScheduleGrid({ values, onChange, readOnly = false, loading = fal
         const value = values?.[day] ?? '';
         return (
           <div key={day} className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/20">
-            <Label htmlFor={day-}>{label}</Label>
+            <Label htmlFor={readOnly ? undefined : `day-${day}`}>{label}</Label>
             {readOnly ? (
               <p className="text-lg font-semibold text-white">
-                {value ? ${value} WIB : 'Tidak dijadwalkan'}
+                {value ? `${value} WIB` : 'Tidak dijadwalkan'}
               </p>
             ) : (
               <Input
-                id={day-}
+                id={`day-${day}`}
                 type="time"
                 value={value || ''}
                 onChange={(event) =>
