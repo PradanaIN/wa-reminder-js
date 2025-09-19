@@ -16,7 +16,7 @@ export async function fetchStatus(repeat = false) {
     const data = await res.json();
     updateStatus(data);
 
-    if (shouldRepeat && !data.active) {
+    if (repeat && !data.active) {
       setTimeout(() => fetchStatus(true), 1000); // coba lagi tiap 1 detik
     }
   } catch (e) {
