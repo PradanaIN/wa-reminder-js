@@ -51,7 +51,9 @@ router.get("/keepalive", (req, res) => {
 // API Statistik
 router.get("/stats", async (req, res) => {
   const logsDir = path.join(__dirname, "../logs");
-  const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".log"));
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
 
   const combined = {
     messagesPerDay: {},
@@ -59,20 +61,28 @@ router.get("/stats", async (req, res) => {
     uptimePerDay: {},
   };
 
-  for (const file of files) {
-    const filePath = path.join(logsDir, file);
-    const stats = await parseLogFilePerDay(filePath);
+  try {
+    const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".log"));
 
-    for (const [date, count] of Object.entries(stats.messagesPerDay)) {
-      combined.messagesPerDay[date] =
-        (combined.messagesPerDay[date] || 0) + count;
+    for (const file of files) {
+      const filePath = path.join(logsDir, file);
+      const stats = await parseLogFilePerDay(filePath);
+
+      for (const [date, count] of Object.entries(stats.messagesPerDay)) {
+        combined.messagesPerDay[date] =
+          (combined.messagesPerDay[date] || 0) + count;
+      }
+      for (const [date, count] of Object.entries(stats.errorsPerDay)) {
+        combined.errorsPerDay[date] =
+          (combined.errorsPerDay[date] || 0) + count;
+      }
+      for (const [date, hours] of Object.entries(stats.uptimePerDay)) {
+        combined.uptimePerDay[date] =
+          (combined.uptimePerDay[date] || 0) + hours;
+      }
     }
-    for (const [date, count] of Object.entries(stats.errorsPerDay)) {
-      combined.errorsPerDay[date] = (combined.errorsPerDay[date] || 0) + count;
-    }
-    for (const [date, hours] of Object.entries(stats.uptimePerDay)) {
-      combined.uptimePerDay[date] = (combined.uptimePerDay[date] || 0) + hours;
-    }
+  } catch (error) {
+    console.error("[Stats] Failed to aggregate log statistics:", error);
   }
 
   res.json(combined);
