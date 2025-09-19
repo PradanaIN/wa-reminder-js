@@ -10,13 +10,17 @@ function getInitialTheme() {
 
 export function setDarkMode(on) {
   document.body.classList.toggle("dark", on);
-  toggleDarkModeBtn.classList.toggle("dark", on);
+  if (toggleDarkModeBtn) {
+    toggleDarkModeBtn.classList.toggle("dark", on);
+  }
   localStorage.setItem("darkMode", on);
 }
 
 export function initDarkMode(renderCharts) {
   const preferredDark = getInitialTheme();
   setDarkMode(preferredDark);
+
+  if (!toggleDarkModeBtn) return;
 
   toggleDarkModeBtn.addEventListener("click", () => {
     const isDark = document.body.classList.contains("dark");
