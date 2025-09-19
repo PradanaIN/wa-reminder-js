@@ -4,13 +4,13 @@ services:
     build: .
     container_name: sigap
     ports:
-      - "3003:3000"
+      - "3000:3000"
     volumes:
-      - ./sessions:/app/sessions
-      - ./logs:/app/logs
-      - ./config:/app/config:ro
-      - ./.wwebjs_auth:/app/.wwebjs_auth
-      - ./.wwebjs_cache:/app/.wwebjs_cache
+      - ./sessions:/usr/src/app/sessions
+      - ./logs:/usr/src/app/logs
+      - ./config:/usr/src/app/config:ro
+      - ./.wwebjs_auth:/usr/src/app/.wwebjs_auth
+      - ./.wwebjs_cache:/usr/src/app/.wwebjs_cache
     env_file:
       - .env.production
 

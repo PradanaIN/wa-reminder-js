@@ -18,7 +18,7 @@ COPY . .
 RUN mkdir -p logs
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3000
 
 # Command to run app
 CMD ["node", "index.js"]
