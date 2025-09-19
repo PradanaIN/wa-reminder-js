@@ -5,10 +5,23 @@ export async function renderCharts() {
     const res = await fetch("/stats");
     const data = await res.json();
 
-    const labels = Object.keys(data.messagesPerDay).sort();
-    const messages = labels.map((d) => data.messagesPerDay[d] || 0);
-    const errors = labels.map((d) => data.errorsPerDay[d] || 0);
-    const uptime = labels.map((d) => data.uptimePerDay[d] || 0);
+    const {
+      messagesPerDay = {},
+      errorsPerDay = {},
+      uptimePerDay = {},
+    } = data || {};
+
+    const labels = Array.from(
+      new Set([
+        ...Object.keys(messagesPerDay),
+        ...Object.keys(errorsPerDay),
+        ...Object.keys(uptimePerDay),
+      ])
+    ).sort();
+
+    const messages = labels.map((d) => messagesPerDay[d] || 0);
+    const errors = labels.map((d) => errorsPerDay[d] || 0);
+    const uptime = labels.map((d) => uptimePerDay[d] || 0);
 
     const isDark = document.body.classList.contains("dark");
     const gridColor = isDark ? "#4b5563" : "#e5e7eb";
