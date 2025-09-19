@@ -8,6 +8,7 @@ import {
   useRemoveOverride,
   useUpdateSchedule,
 } from '../queries/schedule';
+import { useTemplate, useSaveTemplate } from '../queries/templates';
 import { BotControlPanel } from '../components/BotControlPanel';
 import { LogsPanel } from '../components/LogsPanel';
 import { NextRunCard } from '../components/NextRunCard';
@@ -43,20 +44,30 @@ export default function AdminDashboardPage() {
     isFetching: scheduleFetching,
   } = useAdminSchedule();
   const { data: nextRun, isLoading: nextRunLoading } = useAdminNextRun();
+  const {
+    data: template,
+    isLoading: templateLoading,
+    isFetching: templateFetching,
+    error: templateError,
+  } = useTemplate();
 
   const updateScheduleMutation = useUpdateSchedule();
   const addOverrideMutation = useAddOverride();
   const removeOverrideMutation = useRemoveOverride();
+  const saveTemplateMutation = useSaveTemplate();
 
   const schedule = scheduleResponse?.schedule;
 
   const isSchedulePending = scheduleLoading && !schedule;
   const isScheduleUpdating = scheduleFetching && !scheduleLoading;
+  const isTemplatePending = templateLoading && template === undefined;
+  const isTemplateUpdating = templateFetching && !templateLoading;
 
   const [dailyTimes, setDailyTimes] = useState(DEFAULT_TIMES);
   const [timezone, setTimezone] = useState(schedule?.timezone || 'Asia/Makassar');
   const [paused, setPaused] = useState(false);
   const [overrideForm, setOverrideForm] = useState({ date: '', time: '', note: '' });
+  const [templateDraft, setTemplateDraft] = useState('');
 
   useEffect(() => {
     if (schedule) {
@@ -65,6 +76,12 @@ export default function AdminDashboardPage() {
       setPaused(Boolean(schedule.paused));
     }
   }, [schedule]);
+
+  useEffect(() => {
+    if (typeof template === 'string') {
+      setTemplateDraft(template);
+    }
+  }, [template]);
 
   useEffect(() => {
     if (!sessionLoading && !session?.authenticated) {
@@ -85,6 +102,11 @@ export default function AdminDashboardPage() {
     });
   };
 
+  const handleTemplateSubmit = (event) => {
+    event.preventDefault();
+    saveTemplateMutation.mutate(templateDraft);
+  };
+
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => navigate('/admin/login', { replace: true }),
@@ -95,6 +117,13 @@ export default function AdminDashboardPage() {
     () => !overrideForm.date || !overrideForm.time || addOverrideMutation.isLoading,
     [overrideForm, addOverrideMutation.isLoading]
   );
+
+  const isTemplateDirty = useMemo(() => {
+    if (typeof template !== 'string') {
+      return false;
+    }
+    return templateDraft !== template;
+  }, [templateDraft, template]);
 
   const metrics = useMemo(
     () => [
@@ -240,6 +269,68 @@ export default function AdminDashboardPage() {
           </Card>
 
           <NextRunCard nextRun={nextRun} loading={nextRunLoading} />
+        </section>
+
+        <section>
+          <Card className="space-y-6 border-white/10 bg-slate-900/70">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-semibold text-white">Template Pesan</h2>
+                  <p className="text-sm text-slate-400">
+                    Edit isi pesan yang akan dikirim bot. Gunakan placeholder <code>{'{name}'}</code> untuk nama kontak dan{' '}
+                    <code>{'{quote}'}</code> untuk kutipan harian.
+                  </p>
+                </div>
+                {isTemplateUpdating ? (
+                  <div className="flex items-center gap-2 text-xs font-medium text-primary-200">
+                    <Spinner size="sm" />
+                    <span>Mengambil versi terbaru...</span>
+                  </div>
+                ) : null}
+              </div>
+              {templateError ? (
+                <p className="text-sm text-rose-300">{templateError.message}</p>
+              ) : null}
+            </div>
+
+            <form className="space-y-4" onSubmit={handleTemplateSubmit}>
+              <div className="space-y-2">
+                <Label htmlFor="template-editor">Konten template</Label>
+                <textarea
+                  id="template-editor"
+                  className="min-h-[220px] w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-slate-100 shadow-inner shadow-black/40 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                  value={templateDraft}
+                  onChange={(event) => setTemplateDraft(event.target.value)}
+                  disabled={isTemplatePending || saveTemplateMutation.isLoading}
+                />
+                <p className="text-xs text-slate-500">
+                  Placeholder akan otomatis diganti ketika pesan dikirim. Pastikan kedua placeholder tetap tersedia.
+                </p>
+              </div>
+
+              {saveTemplateMutation.error ? (
+                <p className="text-sm text-rose-300">{saveTemplateMutation.error.message}</p>
+              ) : null}
+
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="submit"
+                  disabled={!isTemplateDirty || isTemplatePending || saveTemplateMutation.isLoading}
+                >
+                  {saveTemplateMutation.isLoading ? 'Menyimpan...' : 'Simpan Template'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setTemplateDraft(template || '')}
+                  disabled={!isTemplateDirty || isTemplatePending || saveTemplateMutation.isLoading}
+                >
+                  Reset perubahan
+                </Button>
+              </div>
+            </form>
+          </Card>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
