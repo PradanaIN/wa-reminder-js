@@ -10,7 +10,7 @@ export function updateStatus(data) {
   stopBtn.disabled = !data.active;
 }
 
-export async function fetchStatus(shouldRepeat = false) {
+export async function fetchStatus(repeat = false) {
   try {
     const res = await fetch("/bot/status");
     const data = await res.json();

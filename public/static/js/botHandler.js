@@ -35,7 +35,7 @@ export function initBotControl() {
         toast: false,
       });
 
-      await fetchStatus();
+      await fetchStatus(true);
     } catch (e) {
       Swal.fire({
         icon: "error",
