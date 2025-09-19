@@ -4,28 +4,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Root defaults */
 :root {
-  color-scheme: light dark;
-  font-family: "Inter", "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: dark light;
+  --font-sans: "Inter", "Plus Jakarta Sans", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
+/* Base body styling */
 body {
   margin: 0;
   min-height: 100vh;
-  color: #f8fafc;
-  background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.24), transparent 45%),
+  @apply text-slate-50;
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(79, 70, 229, 0.24),
+      transparent 45%
+    ),
     radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.22), transparent 40%),
     #020617;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Base link styling */
 a {
-  color: #93c5fd;
-  transition: color 150ms ease;
+  @apply text-sky-300 transition-colors duration-150;
 }
 
 a:hover {
-  color: #bfdbfe;
+  @apply text-sky-200;
+}
+
+/* Utility tweaks */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700/70 rounded-full hover:bg-slate-600/70;
 }

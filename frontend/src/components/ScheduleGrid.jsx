@@ -1,19 +1,26 @@
-import { Label } from './ui/Label';
-import { Input } from './ui/Input';
-import { Skeleton } from './ui/Skeleton';
-import { DataPlaceholder } from './ui/DataPlaceholder';
+import { Label } from "./ui/Label";
+import { Input } from "./ui/Input";
+import { Skeleton } from "./ui/Skeleton";
+import { DataPlaceholder } from "./ui/DataPlaceholder";
+import { Clock } from "lucide-react";
 
 const dayLabels = {
-  1: 'Senin',
-  2: 'Selasa',
-  3: 'Rabu',
-  4: 'Kamis',
-  5: 'Jumat',
-  6: 'Sabtu',
-  7: 'Minggu',
+  1: "Senin",
+  2: "Selasa",
+  3: "Rabu",
+  4: "Kamis",
+  5: "Jumat",
+  6: "Sabtu",
+  7: "Minggu",
 };
 
-export function ScheduleGrid({ values, onChange, readOnly = false, loading = false }) {
+export function ScheduleGrid({
+  values,
+  onChange,
+  readOnly = false,
+  loading = false,
+}) {
+  // Loading state
   if (loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -24,32 +31,48 @@ export function ScheduleGrid({ values, onChange, readOnly = false, loading = fal
     );
   }
 
+  // Data belum ada saat editable
   if (!readOnly && !values) {
     return (
       <DataPlaceholder
-        icon="???"
+        icon={<Clock size={24} />}
         title="Belum ada jadwal"
         description="Atur jadwal harian terlebih dahulu untuk mengaktifkan pengiriman otomatis."
       />
     );
   }
 
+  // Grid utama
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Object.entries(dayLabels).map(([day, label]) => {
-        const value = values?.[day] ?? '';
+        const value = values?.[day] ?? "";
+
         return (
-          <div key={day} className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/20">
-            <Label htmlFor={readOnly ? undefined : `day-${day}`}>{label}</Label>
+          <div
+            key={day}
+            className={`flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/20 ${
+              !readOnly
+                ? "transition hover:border-primary-400/40 hover:shadow-md"
+                : ""
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="text-primary-400" />
+              <Label htmlFor={readOnly ? undefined : `day-${day}`}>
+                {label}
+              </Label>
+            </div>
+
             {readOnly ? (
               <p className="text-lg font-semibold text-white">
-                {value ? `${value} WIB` : 'Tidak dijadwalkan'}
+                {value ? `${value} WIB` : "Tidak dijadwalkan"}
               </p>
             ) : (
               <Input
                 id={`day-${day}`}
                 type="time"
-                value={value || ''}
+                value={value || ""}
                 onChange={(event) =>
                   onChange({
                     ...values,
@@ -58,11 +81,13 @@ export function ScheduleGrid({ values, onChange, readOnly = false, loading = fal
                 }
               />
             )}
-            {!readOnly ? (
+
+            {!readOnly && (
               <p className="text-xs text-slate-500">
-                Kosongkan jika tidak ingin menjadwalkan pengiriman pada hari ini.
+                Kosongkan jika tidak ingin menjadwalkan pengiriman pada hari
+                ini.
               </p>
-            ) : null}
+            )}
           </div>
         );
       })}

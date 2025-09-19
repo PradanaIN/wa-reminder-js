@@ -1,5 +1,6 @@
-import { Button } from './ui/Button';
-import { EmptyState } from './ui/EmptyState';
+import { Button } from "./ui/Button";
+import { EmptyState } from "./ui/EmptyState";
+import { Trash2 } from "lucide-react";
 
 export function OverrideTable({ overrides = [], onRemove }) {
   if (!overrides.length) {
@@ -27,17 +28,23 @@ export function OverrideTable({ overrides = [], onRemove }) {
           </thead>
           <tbody className="divide-y divide-white/10">
             {sorted.map((item) => (
-              <tr key={item.id || `${item.date}-${item.time}`} className="bg-slate-900/50 text-slate-200">
-                <td className="px-4 py-3 font-medium">{item.date}</td>
+              <tr
+                key={item.id || `${item.date}-${item.time}`}
+                className="group bg-slate-900/50 text-slate-200 transition hover:bg-slate-900/70"
+              >
+                <td className="px-4 py-3 font-medium text-primary-300">
+                  {item.date}
+                </td>
                 <td className="px-4 py-3">{item.time}</td>
-                <td className="px-4 py-3 text-slate-300">{item.note || '-'}</td>
+                <td className="px-4 py-3 text-slate-300">{item.note || "-"}</td>
                 <td className="px-4 py-3 text-right">
                   <Button
                     variant="ghost"
-                    className="text-sm text-rose-300 hover:text-rose-200"
+                    className="inline-flex items-center gap-1 text-sm text-rose-300 hover:text-rose-200"
                     onClick={() => onRemove?.(item.date)}
                   >
-                    Hapus
+                    <Trash2 size={14} />
+                    <span className="hidden sm:inline">Hapus</span>
                   </Button>
                 </td>
               </tr>
