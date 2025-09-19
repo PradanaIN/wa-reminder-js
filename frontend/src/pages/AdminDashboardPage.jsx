@@ -37,14 +37,21 @@ export default function AdminDashboardPage() {
   const { data: session, isLoading: sessionLoading } = useSession();
   const logoutMutation = useLogout();
 
-  const { data: scheduleResponse, isLoading: scheduleLoading } = useAdminSchedule();
-  const { data: nextRun } = useAdminNextRun();
+  const {
+    data: scheduleResponse,
+    isLoading: scheduleLoading,
+    isFetching: scheduleFetching,
+  } = useAdminSchedule();
+  const { data: nextRun, isLoading: nextRunLoading } = useAdminNextRun();
 
   const updateScheduleMutation = useUpdateSchedule();
   const addOverrideMutation = useAddOverride();
   const removeOverrideMutation = useRemoveOverride();
 
   const schedule = scheduleResponse?.schedule;
+
+  const isSchedulePending = scheduleLoading && !schedule;
+  const isScheduleUpdating = scheduleFetching && !scheduleLoading;
 
   const [dailyTimes, setDailyTimes] = useState(DEFAULT_TIMES);
   const [timezone, setTimezone] = useState(schedule?.timezone || 'Asia/Makassar');
@@ -93,43 +100,42 @@ export default function AdminDashboardPage() {
     () => [
       {
         label: 'Status Jadwal',
-        value: schedule?.paused ? 'Dijeda' : 'Aktif',
-        helper: schedule?.paused
-          ? 'Penjadwalan otomatis sedang dihentikan sementara.'
-          : 'Penjadwalan berjalan sesuai jadwal default.',
+        value: schedule ? (schedule.paused ? 'Dijeda' : 'Aktif') : 'Memuat...',
+        helper: schedule
+          ? schedule.paused
+            ? 'Penjadwalan otomatis sedang dihentikan sementara.'
+            : 'Penjadwalan berjalan sesuai jadwal default.'
+          : 'Menunggu data jadwal dari server.',
         tone: schedule?.paused ? 'amber' : 'emerald',
       },
       {
         label: 'Zona Waktu',
         value: schedule?.timezone || 'Asia/Makassar',
-        helper: 'Digunakan sebagai acuan perhitungan jadwal.',
+        helper: schedule
+          ? 'Digunakan sebagai acuan perhitungan jadwal.'
+          : 'Menunggu data jadwal dari server.',
         tone: 'sky',
       },
       {
         label: 'Override Aktif',
-        value: schedule?.manualOverrides?.length || 0,
+        value: schedule?.manualOverrides?.length ?? '...',
         helper: schedule?.manualOverrides?.length
           ? 'Override akan otomatis terhapus setelah digunakan.'
-          : 'Belum ada override manual.',
+          : schedule
+          ? 'Belum ada override manual.'
+          : 'Menunggu data jadwal dari server.',
         tone: 'slate',
       },
     ],
-    [schedule?.manualOverrides?.length, schedule?.paused, schedule?.timezone]
+    [schedule]
   );
-
-  if (sessionLoading || scheduleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   return (
     <AdminLayout
       username={session?.user?.username}
       onLogout={handleLogout}
       isLoggingOut={logoutMutation.isLoading}
+      loading={sessionLoading}
     >
       <div className="space-y-12">
         <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -141,12 +147,18 @@ export default function AdminDashboardPage() {
                   Ringkasan harian
                 </Badge>
                 <h1 className="text-3xl font-semibold text-white">
-                  Halo, {session?.user?.username || 'Admin'} ??
+                  Halo, {session?.user?.username || 'Admin'}!
                 </h1>
                 <p className="max-w-xl text-sm text-slate-300">
                   Pantau performa bot dan jadwal pengiriman. Gunakan panel di bawah untuk mengatur jadwal default,
                   menambahkan override, dan memantau log aktivitas terkini.
                 </p>
+                {isScheduleUpdating ? (
+                  <div className="flex items-center gap-2 text-xs font-medium text-primary-200">
+                    <Spinner size="sm" />
+                    <span>Pembaruan data jadwal sedang diproses...</span>
+                  </div>
+                ) : null}
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 {metrics.map((metric) => (
@@ -156,6 +168,7 @@ export default function AdminDashboardPage() {
                     value={metric.value}
                     helper={metric.helper}
                     tone={metric.tone}
+                    loading={isSchedulePending}
                   />
                 ))}
               </div>
@@ -174,7 +187,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <form className="space-y-6" onSubmit={handleScheduleSubmit}>
-              <ScheduleGrid values={dailyTimes} onChange={setDailyTimes} />
+              <ScheduleGrid values={dailyTimes} onChange={setDailyTimes} loading={isSchedulePending} />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -211,12 +224,13 @@ export default function AdminDashboardPage() {
               ) : null}
 
               <div className="flex flex-wrap gap-3">
-                <Button type="submit" disabled={updateScheduleMutation.isLoading}>
+                <Button type="submit" disabled={isSchedulePending || updateScheduleMutation.isLoading}>
                   {updateScheduleMutation.isLoading ? 'Menyimpan...' : 'Simpan Jadwal'}
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
+                  disabled={!schedule || isSchedulePending}
                   onClick={() => schedule && setDailyTimes({ ...DEFAULT_TIMES, ...schedule.dailyTimes })}
                 >
                   Reset perubahan
@@ -225,7 +239,7 @@ export default function AdminDashboardPage() {
             </form>
           </Card>
 
-          <NextRunCard nextRun={nextRun} />
+          <NextRunCard nextRun={nextRun} loading={nextRunLoading} />
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.5fr,1fr]">

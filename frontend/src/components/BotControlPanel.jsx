@@ -2,6 +2,7 @@ import { useBotStart, useBotStatus, useBotStop } from '../queries/bot';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
+import { Skeleton } from './ui/Skeleton';
 import { StatusPill } from './StatusPill';
 
 export function BotControlPanel() {
@@ -19,10 +20,10 @@ export function BotControlPanel() {
         <div>
           <h3 className="text-lg font-semibold text-white">Kontrol Bot WhatsApp</h3>
           <p className="text-sm text-slate-200">
-            Nyalakan atau hentikan bot untuk mengatur pengiriman pesan otomatis harian.
+            Pantau dan kontrol status bot untuk menjamin pengiriman pesan pengingat berjalan sesuai jadwal.
           </p>
         </div>
-        {isLoading ? <Spinner size="sm" /> : <StatusPill active={Boolean(data?.active)} />}
+        {isLoading ? <Skeleton className="h-6 w-24" /> : <StatusPill active={Boolean(data?.active)} />}
       </div>
       <div className="flex flex-wrap gap-3">
         <Button

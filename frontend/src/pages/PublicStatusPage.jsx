@@ -1,20 +1,13 @@
 import { usePublicNextRun, usePublicSchedule } from '../queries/schedule';
 import { useSystemHealth } from '../queries/system';
+import { ScheduleGrid } from '../components/ScheduleGrid';
 import { Card } from '../components/ui/Card';
 import { Spinner } from '../components/ui/Spinner';
 import { Badge } from '../components/ui/Badge';
+import { Skeleton } from '../components/ui/Skeleton';
+import { DataPlaceholder } from '../components/ui/DataPlaceholder';
 import { StatusPill } from '../components/StatusPill';
 import { PublicLayout } from '../components/layout/PublicLayout';
-
-const dayLabels = {
-  1: 'Senin',
-  2: 'Selasa',
-  3: 'Rabu',
-  4: 'Kamis',
-  5: 'Jumat',
-  6: 'Sabtu',
-  7: 'Minggu',
-};
 
 export default function PublicStatusPage() {
   const { data: health, isLoading: healthLoading } = useSystemHealth();
@@ -66,84 +59,49 @@ export default function PublicStatusPage() {
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Pengiriman berikutnya</span>
                 {nextRunLoading ? (
-                  <Spinner size="sm" />
-                ) : nextRun?.timestamp ? (
-                  <span className="font-semibold text-white">{nextRun.formatted}</span>
-                ) : (
-                  <span className="font-medium text-amber-200">Belum dijadwalkan</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <section id="schedule" className="grid gap-8 lg:grid-cols-[2fr,1fr]">
-          <Card className="space-y-6 border-white/10 bg-slate-900/65">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-xl font-semibold text-white">Jadwal Otomatis</h2>
-              <p className="text-sm text-slate-400">
-                Jadwal pengiriman pesan yang diterapkan secara berkala. Anda bisa mengubahnya melalui dashboard admin.
-              </p>
-            </div>
-            {scheduleLoading ? (
-              <div className="flex h-40 items-center justify-center">
-                <Spinner />
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Object.entries(dayLabels).map(([day, label]) => (
-                  <div key={day} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/20">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
-                      {schedule?.dailyTimes?.[day] ? `${schedule.dailyTimes[day]} WIB` : 'Tidak dijadwalkan'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-            {schedule?.paused ? (
-              <Badge variant="warning" className="w-fit uppercase tracking-wide">
-                Penjadwalan otomatis sementara dijeda
-              </Badge>
-            ) : null}
-          </Card>
-
-          <Card className="space-y-5 border-white/10 bg-slate-900/65">
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-white">Pengiriman Berikutnya</h2>
-              <p className="text-sm text-slate-400">
-                Informasi jadwal terdekat yang akan dieksekusi oleh sistem pengingat.
-              </p>
-            </div>
-            {nextRunLoading ? (
-              <div className="flex h-32 items-center justify-center">
-                <Spinner />
+              <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-8 w-44" />
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-16 w-full" />
               </div>
             ) : nextRun?.timestamp ? (
-              <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-                <div>
+              <div className="space-y-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                <div className="space-y-1">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Waktu pengiriman</p>
                   <p className="mt-1 text-2xl font-semibold text-white">{nextRun.formatted}</p>
                   <p className="text-sm text-slate-400">{nextRun.timezone}</p>
                 </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+                  <span className="rounded-full bg-primary-500/15 px-3 py-1 text-primary-200">
+                    {nextRun.override ? 'Override manual' : 'Jadwal default'}
+                  </span>
+                  {schedule?.timezone ? (
+                    <span className="rounded-full bg-slate-800/70 px-3 py-1 text-slate-300">
+                      Zona waktu {schedule.timezone}
+                    </span>
+                  ) : null}
+                </div>
                 {nextRun.override ? (
                   <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 p-4 text-sm text-amber-100">
-                    <p className="font-semibold">Override manual aktif</p>
+                    <p className="font-semibold">Override aktif</p>
                     <p>
                       {nextRun.override.date} pukul {nextRun.override.time}
-                      {nextRun.override.note ? ' — ' + nextRun.override.note : ''}
+                      {nextRun.override.note ? ' - ' + nextRun.override.note : ''}
                     </p>
                   </div>
                 ) : (
-                  <Badge variant="info" className="w-fit uppercase tracking-wide">
-                    Mengikuti jadwal default
-                  </Badge>
+                  <p className="rounded-xl border border-white/10 bg-slate-950/80 p-4 text-sm text-slate-300">
+                    Pengiriman akan mengikuti jadwal default harian.
+                  </p>
                 )}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/60 p-6 text-sm text-slate-400">
-                Belum ada jadwal pengiriman berikutnya. Hubungi administrator untuk mengatur jadwal baru.
-              </div>
+              <DataPlaceholder
+                title="Belum ada jadwal berikutnya"
+                description="Hubungi administrator untuk mengatur jadwal pengiriman yang baru."
+                icon={null}
+              />
             )}
           </Card>
         </section>

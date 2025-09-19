@@ -1,4 +1,15 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3003').replace(/\/$/, '');
+const DEFAULT_API_PORT = 3301;
+
+function resolveDefaultBaseUrl() {
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:${DEFAULT_API_PORT}`;
+  }
+  return `http://localhost:${DEFAULT_API_PORT}`;
+}
+
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || resolveDefaultBaseUrl();
+const API_BASE_URL = rawBaseUrl.replace(/\/$/, '');
 
 async function apiRequest(path, options = {}) {
   const url = `${API_BASE_URL}${path}`;
@@ -12,9 +23,7 @@ async function apiRequest(path, options = {}) {
   };
 
   if (options.body !== undefined) {
-    config.body = typeof options.body === 'string'
-      ? options.body
-      : JSON.stringify(options.body);
+    config.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
   }
 
   const response = await fetch(url, config);
@@ -24,7 +33,7 @@ async function apiRequest(path, options = {}) {
   try {
     payload = text ? JSON.parse(text) : null;
   } catch {
-    // Keep as plain text when JSON parsing fails
+    // keep plain text on parse errors
   }
 
   if (!response.ok) {

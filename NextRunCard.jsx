@@ -8,8 +8,8 @@ export function NextRunCard({ nextRun, loading }) {
     return (
       <Card className="space-y-4 border-white/10 bg-slate-900/65">
         <div className="flex flex-col gap-2">
-          <div className="h-5 w-40 animate-pulse rounded-full bg-slate-800/70" />
-          <div className="h-4 w-72 animate-pulse rounded-full bg-slate-800/70" />
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-60" />
         </div>
         <Skeleton className="h-32" />
       </Card>
@@ -55,7 +55,7 @@ export function NextRunCard({ nextRun, loading }) {
             <p className="font-semibold">Override manual aktif</p>
             <p>
               {details.override.date} pukul {details.override.time}
-              {details.override.note ? ' - ' + details.override.note : ''}
+              {details.override.note ?  -  : ''}
             </p>
           </div>
         ) : (

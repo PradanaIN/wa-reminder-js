@@ -1,0 +1,10 @@
+# -*- coding: utf-8 -*-
+from pathlib import Path
+
+path = Path(r'frontend/src/pages/PublicStatusPage.jsx')
+text = path.read_text()
+old = "            {scheduleLoading ? (\n              <div className=\"flex h-40 items-center justify-center\">\n                <Spinner />\n              </div>\n            ) : (\n              <div className=\"grid gap-4 sm:grid-cols-2 lg:grid-cols-3\">\n                {Object.entries(dayLabels).map(([day, label]) => (\n                  <div key={day} className=\"rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/20\">\n                    <p className=\"text-xs font-semibold uppercase tracking-wide text-slate-400\">{label}</p>\n                    <p className=\"mt-2 text-lg font-semibold text-white\">\n                      {schedule?.dailyTimes?.[day] ? `${schedule.dailyTimes[day]} WIB` : 'Tidak dijadwalkan'}\n                    </p>\n                  </div>\n                ))}\n              </div>\n            )}\n            {schedule?.paused ? (\n              <Badge variant=\"warning\" className=\"w-fit uppercase tracking-wide\">\n                Penjadwalan otomatis sementara dijeda\n              </Badge>\n            ) : null}"
+new = "            {scheduleLoading ? (\n              <ScheduleGrid values={schedule?.dailyTimes} readOnly loading highlightToday />\n            ) : schedule ? (\n              <ScheduleGrid values={schedule.dailyTimes} readOnly highlightToday />\n            ) : (\n              <DataPlaceholder\n                icon=\"???\"\n                title=\"Jadwal belum tersedia\"\n                description=\"Hubungi administrator untuk mengatur jadwal pengiriman.\"\n              />\n            )}\n            {schedule?.paused ? (\n              <Badge variant=\"warning\" className=\"w-fit uppercase tracking-wide\">\n                Penjadwalan otomatis sementara dijeda\n              </Badge>\n            ) : null}"
+if old not in text:
+    raise SystemExit('old schedule block not found')
+path.write_text(text.replace(old, new))
