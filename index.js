@@ -17,6 +17,7 @@ const { stopHeartbeat } = require("./utils/heartbeat");
 const { addLog } = require("./controllers/logController");
 const { initSocket } = require("./utils/socketHandler");
 const { runDailyJob } = require("./jobs/dailyJob");
+const apiKeyAuth = require("./middleware/apiKeyAuth");
 
 // Inisialisasi dotenv untuk mengakses variabel lingkungan
 require("dotenv").config();
@@ -58,10 +59,10 @@ const messageRoutes = require("./routes/messageRoutes");
 const systemRoutes = require("./routes/systemRoutes");
 const templateRoutes = require("./routes/templateRoutes");
 
-app.use("/bot", botRoutes);
+app.use("/bot", apiKeyAuth, botRoutes);
 app.use("/send", messageRoutes);
 app.use("/", systemRoutes);
-app.use("/template", templateRoutes);
+app.use("/template", apiKeyAuth, templateRoutes);
 
 // Start server via HTTP server (bukan app.listen)
 server.listen(PORT, () => {
