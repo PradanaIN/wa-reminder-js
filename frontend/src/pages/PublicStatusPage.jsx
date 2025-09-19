@@ -59,52 +59,54 @@ export default function PublicStatusPage() {
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Pengiriman berikutnya</span>
                 {nextRunLoading ? (
-              <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-                <Skeleton className="h-3 w-32" />
-                <Skeleton className="h-8 w-44" />
-                <Skeleton className="h-3 w-28" />
-                <Skeleton className="h-16 w-full" />
-              </div>
-            ) : nextRun?.timestamp ? (
-              <div className="space-y-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Waktu pengiriman</p>
-                  <p className="mt-1 text-2xl font-semibold text-white">{nextRun.formatted}</p>
-                  <p className="text-sm text-slate-400">{nextRun.timezone}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide">
-                  <span className="rounded-full bg-primary-500/15 px-3 py-1 text-primary-200">
-                    {nextRun.override ? 'Override manual' : 'Jadwal default'}
-                  </span>
-                  {schedule?.timezone ? (
-                    <span className="rounded-full bg-slate-800/70 px-3 py-1 text-slate-300">
-                      Zona waktu {schedule.timezone}
-                    </span>
-                  ) : null}
-                </div>
-                {nextRun.override ? (
-                  <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 p-4 text-sm text-amber-100">
-                    <p className="font-semibold">Override aktif</p>
-                    <p>
-                      {nextRun.override.date} pukul {nextRun.override.time}
-                      {nextRun.override.note ? ' - ' + nextRun.override.note : ''}
-                    </p>
+                  <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-8 w-44" />
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                ) : nextRun?.timestamp ? (
+                  <div className="space-y-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase tracking-wide text-slate-400">Waktu pengiriman</p>
+                      <p className="mt-1 text-2xl font-semibold text-white">{nextRun.formatted}</p>
+                      <p className="text-sm text-slate-400">{nextRun.timezone}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+                      <span className="rounded-full bg-primary-500/15 px-3 py-1 text-primary-200">
+                        {nextRun.override ? 'Override manual' : 'Jadwal default'}
+                      </span>
+                      {schedule?.timezone ? (
+                        <span className="rounded-full bg-slate-800/70 px-3 py-1 text-slate-300">
+                          Zona waktu {schedule.timezone}
+                        </span>
+                      ) : null}
+                    </div>
+                    {nextRun.override ? (
+                      <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 p-4 text-sm text-amber-100">
+                        <p className="font-semibold">Override aktif</p>
+                        <p>
+                          {nextRun.override.date} pukul {nextRun.override.time}
+                          {nextRun.override.note ? ' - ' + nextRun.override.note : ''}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="rounded-xl border border-white/10 bg-slate-950/80 p-4 text-sm text-slate-300">
+                        Pengiriman akan mengikuti jadwal default harian.
+                      </p>
+                    )}
                   </div>
                 ) : (
-                  <p className="rounded-xl border border-white/10 bg-slate-950/80 p-4 text-sm text-slate-300">
-                    Pengiriman akan mengikuti jadwal default harian.
-                  </p>
+                  <DataPlaceholder
+                    title="Belum ada jadwal berikutnya"
+                    description="Hubungi administrator untuk mengatur jadwal pengiriman yang baru."
+                    icon={null}
+                  />
                 )}
               </div>
-            ) : (
-              <DataPlaceholder
-                title="Belum ada jadwal berikutnya"
-                description="Hubungi administrator untuk mengatur jadwal pengiriman yang baru."
-                icon={null}
-              />
-            )}
-          </Card>
-        </section>
+            </div>
+          </div>
+        </Card>
 
         <Card className="flex flex-col items-center gap-4 border-white/10 bg-slate-900/75 py-10 text-center">
           <h2 className="text-2xl font-semibold text-white">Ingin menyesuaikan jadwal?</h2>
