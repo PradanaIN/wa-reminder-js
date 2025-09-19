@@ -1,0 +1,8 @@
+node_modules/
+config/*.json
+logs/
+storage/
+.wwebjs_auth/
+.wwebjs_cache/
+.github/
+.github/workflows/

@@ -1,27 +1,22 @@
 {
-  "name": "wa-reminder",
+  "name": "wa-reminder-workspace",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Workspace for WA Reminder backend and frontend",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "build": "npm --workspace backend run build && npm --workspace frontend run build",
+    "test": "npm --workspace backend run test",
+    "lint": "npm --workspace backend run lint"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "dotenv": "^16.5.0",
-    "ejs": "^3.1.10",
-    "express": "^5.1.0",
-    "googleapis": "^149.0.0",
-    "luxon": "^3.6.1",
-    "moment-timezone": "^0.6.0",
-    "node-schedule": "^2.1.1",
-    "qrcode-terminal": "^0.12.0",
-    "socket.io": "^4.8.1",
-    "whatsapp-web.js": "^1.30.0",
-    "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   }
 }
+

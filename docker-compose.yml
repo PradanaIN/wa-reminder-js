@@ -1,17 +1,25 @@
-version: "3"
-services:
-  sigap-bot:
-    build: .
-    container_name: sigap
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./sessions:/usr/src/app/sessions
-      - ./logs:/usr/src/app/logs
-      - ./config:/usr/src/app/config:ro
-      - ./.wwebjs_auth:/usr/src/app/.wwebjs_auth
-      - ./.wwebjs_cache:/usr/src/app/.wwebjs_cache
-    env_file:
-      - .env.production
+version: "3.9"
 
+services:
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3301:3001"
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:3301
+    depends_on:
+      - backend
+    ports:
+      - "3302:80"
     restart: unless-stopped

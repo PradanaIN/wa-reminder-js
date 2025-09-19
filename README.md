@@ -1,117 +1,172 @@
-# WhatsApp Reminder Bot (SIGAP)
+# WA Reminder Platform
 
-## Deskripsi Aplikasi
+Sistem pengingat WhatsApp yang kini dibagi menjadi dua aplikasi: **backend** untuk bot dan API, serta **frontend** untuk antarmuka admin/publik. Arsitektur baru ini memudahkan pengelolaan jadwal, meningkatkan reliabilitas, dan memberikan pengalaman pengguna yang lebih baik.
 
-WhatsApp Reminder Bot (SIGAP) adalah aplikasi bot WhatsApp yang berfungsi untuk mengirimkan pesan pengingat otomatis kepada karyawan atau tim sesuai jadwal kerja harian. Bot ini dirancang untuk membantu mengingatkan aktivitas penting seperti absen pulang, pemeriksaan perangkat, dan pengisian laporan harian melalui WhatsApp secara otomatis.
+## Apa yang baru?
 
-## Tujuan Aplikasi
+- ?? **Monorepo terstruktur** (`backend/` + `frontend/`).
+- ?? **Konfigurasi jadwal dinamis** per hari dan override manual per tanggal.
+- ?? **Penjadwalan ulang otomatis** ketika jadwal diubah atau override ditambahkan.
+- ?? **Otorisasi berlapis**: halaman publik tanpa login, dashboard admin dengan sesi, API kontrol tetap memakai API key.
+- ?? **Dashboard admin baru (React + Tailwind)** untuk mengatur jadwal, override, log, dan kontrol bot.
+- ?? **Halaman status publik** yang menampilkan jadwal dan pengiriman berikutnya secara real-time.
+- ????? **Reliabilitas bot ditingkatkan** dengan pemeriksaan koneksi periodik, watcher konfigurasi, dan restart otomatis.
 
-- Meningkatkan kedisiplinan dan produktivitas dengan pengingat otomatis.
-- Memudahkan pengawasan aktivitas harian tanpa perlu pengingat manual.
-- Mengurangi kesalahan atau kelupaan terkait aktivitas rutin harian.
-
-## Fitur Utama
-
-- 🔁 Pengiriman pesan otomatis berdasarkan hari kerja dan jadwal waktu yang ditentukan.
-- 📅 Scheduler pintar yang menyesuaikan hari kerja (Senin–Jumat), skip weekend.
-- 📋 Pengambilan daftar kontak dinamis dari Google Sheets.
-- 🖥️ Dashboard web dengan antarmuka modern dan dark/light mode.
-- ▶️ Tombol start/stop bot langsung dari dashboard.
-- 🔌 API endpoint untuk trigger manual pengiriman pesan dan keepalive ping.
-- 🔐 Autentikasi sesi WhatsApp menggunakan LocalAuth, menghindari scan QR berulang.
-- 📡 Monitoring koneksi, status bot, dan log aktivitas secara realtime via WebSocket.
-- 🔍 Filter log realtime di dashboard untuk pencarian mudah.
-- 📈 Chart interaktif menampilkan statistik pengiriman pesan dan error.
-- 💡 Auto-detect mode gelap dari preferensi sistem dan toggle manual.
-- ⚠️ Proteksi kredensial dan secret scanning agar aman dari kebocoran di Git.
-
-## Teknologi yang Digunakan
-
-- **Node.js** — Runtime backend utama.
-- **whatsapp-web.js** — Integrasi tidak resmi dengan WhatsApp Web.
-- **Express.js** — Server API dan dashboard.
-- **Google Sheets API** — Mengambil daftar kontak secara dinamis.
-- **Moment-timezone** — Penanganan zona waktu lokal.
-- **Socket.IO** — Komunikasi realtime dashboard.
-- **winston + DailyRotateFile** — Logging dengan rotasi harian.
-- **Tailwind CSS + shadcn/ui** — UI dashboard modern dan responsif.
-- **dotenv** — Konfigurasi environment variables.
-
-## Persiapan Environment
-
-1. Pastikan Node.js (v16 ke atas) sudah terinstall di komputer/server kamu.
-2. Clone repository ini:
-
-   ```bash
-   git clone https://github.com/pradanain/wa-reminder.git
-   cd wa-reminder
-   ```
-
-3. Install dependencies
-
-   ```
-   npm install
-
-   ```
-
-4. Buat file `.env` untuk konfigurasi variabel environment
-
-   ```
-   PORT=PORT_KAMU
-   TIMEZONE=TIMEZONE_KAMU
-   GOOGLE_CREDENTIALS_PATH=PATH_CREDNTIALS_KAMU
-   SPREADSHEET_ID=ID_GOOGLE_SHEET_KAMU
-   CONTROL_API_KEY=API_KEY_KONTROL_KAMU
-
-   ```
-
-   Gunakan nilai `CONTROL_API_KEY` untuk mengamankan endpoint kontrol bot dan editor template. Kunci ini wajib dikirimkan oleh klien ketika mengakses API terkait.
-
-## Menjalankan Aplikasi
-
-Jalankan perintah berikut untuk memulai bot dan server:
-
-```
-node index.js
-```
-
-- Setelah berjalan, scan QR code yang muncul di terminal menggunakan WhatsApp di ponsel kamu.
-- Buka browser dan akses `http://localhost:port` untuk membuka dashboard.
-- Dashboard menampilkan log realtime, tombol start/stop bot, status koneksi, dan chart statistik.
-- Gunakan fitur filter log dan toggle dark mode di dashboard.
-
-## Autentikasi API Kontrol
-
-- Semua request ke endpoint `/bot` dan `/template` kini memerlukan API key.
-- Sertakan header `x-api-key: <CONTROL_API_KEY>` pada setiap request. Alternatifnya, gunakan header `Authorization: Bearer <CONTROL_API_KEY>`.
-- Jika header tidak dikirim, server akan mengembalikan status **401 Unauthorized**.
-- Jika kunci salah, server akan mengembalikan status **403 Forbidden**.
-- Pastikan variabel environment `CONTROL_API_KEY` terkonfigurasi di server atau file `.env` sebelum menjalankan aplikasi.
-
-## Struktur Folder
+## Arsitektur
 
 ```
 wa-reminder/
-├── config/		# Service dan OAuth
-├── controllers/        # Pengontrol pengiriman pesan
-├── jobs/               # Scheduler harian (dailyJob.js)
-├── log/           	# Dokumentasi log
-├── public/             # Dashboard frontend
-├── routes/		# Endpoint
-├── services/           # Sesi OAuth
-├── sessions/           # Sesi login WhatsApp
-├── templates/          # Template pesan
-├── utils/              # Lain-lain
-├── views/           	# EJS Template Engine
-├── .env                # Konfigurasi environment
-├── index.js            # Entry point utama
-└── README.md
-
++- backend/              # Layanan Express + WhatsApp bot
+�  +- src/
+�  �  +- app.js         # Inisialisasi Express & middleware
+�  �  +- server.js      # HTTP + Socket.IO bootstrap
+�  �  +- controllers/   # Logika bot, pesan, jadwal
+�  �  +- jobs/          # Penjadwal dinamis
+�  �  +- routes/        # Endpoint API & halaman server-side
+�  �  +- services/      # scheduleService, Google API, dll
+�  �  +- utils/         # Kalender, logger, socket handler
+�  �  +- views/         # Halaman fallback server-side (EJS)
+�  +- public/           # Aset statis backend (legacy dashboard)
+�  +- storage/          # `schedule-config.json`, sesi WhatsApp
+�  +- logs/             # Log ter-rotate
+�
++- frontend/            # Aplikasi Vite + React (UI baru)
+�  +- src/
+�  �  +- pages/         # PublicStatus, AdminLogin, AdminDashboard
+�  �  +- queries/       # React Query hooks (auth, schedule, bot)
+�  �  +- components/    # UI kit & komponen utilitas
+�  �  +- lib/           # API client
+�  +- public/           # Aset build Vite
+�
++- package.json         # Workspaces + shared scripts
++- README.md
 ```
 
-## NOTE
+## Persyaratan
 
-- Aplikasi ini menggunakan `whatsapp-web.js` yang merupakan library tidak resmi, jadi ada kemungkinan ada batasan atau perubahan dari pihak WhatsApp yang mempengaruhi bot.
-- Pastikan koneksi internet stabil agar bot bisa berjalan lancar.
-- jangan sebarkan `credentials` dan file `.env` ke publik.
-- Gunakan dengan bijak dan pastikan sesuai dengan kebijakan WhatsApp.
+- Node.js 18 atau lebih baru.
+- WhatsApp Web kompatibel (untuk `whatsapp-web.js`).
+- Kredensial Google Sheet/Calendar (opsional bila menggunakan integrasi tersebut).
+
+## Instalasi
+
+```bash
+# Clone repo
+git clone https://github.com/pradanain/wa-reminder.git
+cd wa-reminder
+
+# Instal semua dependensi (backend + frontend)
+npm install
+```
+
+### Konfigurasi backend (`backend/.env`)
+
+```env
+PORT=3001
+WEB_APP_URL=http://localhost:3302
+TIMEZONE=Asia/Makassar
+
+ADMIN_USERNAME=admin
+# Pilih salah satu dari dua opsi berikut:
+ADMIN_PASSWORD=change_me            # untuk pengembangan lokal
+# ADMIN_PASSWORD_HASH=               # hash bcrypt untuk produksi
+SESSION_SECRET=please-change-this-secret
+
+CONTROL_API_KEY=ubah_api_key
+
+GOOGLE_REDIRECT_URI=urn:ietf:wg:oauth:2.0:oob
+GOOGLE_TOKEN_PATH=./config/calendar_token.json
+GOOGLE_CREDENTIALS_PATH=./config/calendar_oauth.json
+
+SPREADSHEET_ID=isi_jika_menggunakan_google_sheet
+SPREADSHEET_RANGE=Sheet1!A2:C
+
+SCHEDULER_RETRY_INTERVAL_MS=60000
+SCHEDULER_MAX_RETRIES=3
+```
+
+> Catatan: file kredensial sensitif di `backend/config/*.json` diabaikan oleh git. Simpan file asli pada direktori tersebut sebelum menjalankan aplikasi.
+
+### Konfigurasi frontend (`frontend/.env`)
+
+```env
+VITE_API_BASE_URL=http://localhost:3301
+```
+
+## Menjalankan
+
+### Mode pengembangan (backend + frontend bersamaan)
+
+```bash
+npm run dev
+```
+
+- Backend tersedia di `http://localhost:3001`
+- Frontend React tersedia di `http://localhost:5173`
+
+### Menjalankan hanya backend
+
+```bash
+npm run dev:backend   # nodemon src/server.js
+```
+
+### Menjalankan hanya frontend
+
+```bash
+npm run dev:frontend  # vite dev server
+```
+
+### Build produksi
+
+```bash
+npm run build         # backend: no-op, frontend: vite build
+```
+
+Hasil build frontend berada di `frontend/dist/`. Sajikan folder ini melalui CDN atau reverse proxy lalu arahkan `WEB_APP_URL` ke domain produksimu.
+
+## Fitur Backend
+
+- **Penjadwalan dinamis**: `scheduleService` menyimpan jadwal ke `backend/storage/schedule-config.json`. File dibuat otomatis saat pertama kali dijalankan.
+- **Override manual**: Override berlaku sekali dan otomatis ditandai setelah pengiriman, lalu dibersihkan.
+- **Watcher file**: Perubahan manual pada `schedule-config.json` memicu reschedule otomatis.
+- **Auto retry**: Jika WhatsApp client putus, sistem mencoba ulang sampai `SCHEDULER_MAX_RETRIES` dengan interval `SCHEDULER_RETRY_INTERVAL_MS`.
+- **API baru**:
+  - `GET /api/schedule` & `GET /api/schedule/next-run` (publik)
+  - `POST /api/auth/login` & `POST /api/auth/logout`
+  - `GET/PUT /api/admin/schedule`
+  - `POST/DELETE /api/admin/schedule/overrides`
+  - `POST /api/admin/bot/start` dan `POST /api/admin/bot/stop`
+  - Endpoint lama `/api/system/*`, `/api/bot/*` tetap tersedia (dengan API key bila diperlukan).
+
+## Fitur Frontend
+
+- **Halaman publik** (`/`) menampilkan status bot, jadwal harian, dan pengiriman berikutnya.
+- **Login admin** (`/admin/login`) dengan sesi cookie.
+- **Dashboard admin** (`/admin/dashboard`):
+  - Edit jadwal harian (time picker per hari).
+  - Mengatur zona waktu dan pause scheduler.
+  - Mengelola override manual (tambah/hapus).
+  - Kontrol bot (start/stop) + indikator status.
+  - Viewer log real-time (auto refresh).
+- Dibangun dengan React + React Router + React Query + Tailwind v4.
+
+## Catatan Operasional
+
+- `backend/storage/schedule-config.json` dan `backend/storage/sessions/` diabaikan dari git namun disimpan lokal untuk menjalankan bot.
+- Pastikan direktori `backend/logs/` writable, log akan dirotasi harian oleh Winston.
+- Untuk produksi, gunakan reverse proxy (nginx/traefik) untuk mengamankan backend dan sajikan frontend hasil build.
+- Backup file `schedule-config.json` bila ingin menjaga riwayat konfigurasi jadwal.
+
+## Script bantu (root)
+
+| Perintah                | Deskripsi                                      |
+|------------------------|--------------------------------------------------|
+| `npm run dev`          | Jalankan backend + frontend bersamaan            |
+| `npm run dev:backend`  | Jalankan backend saja (nodemon)                  |
+| `npm run dev:frontend` | Jalankan frontend (Vite)                         |
+| `npm run build`        | Build frontend (backend tidak memerlukan build)  |
+| `npm run lint`         | Lint backend (`eslint --ext .js src`)            |
+
+---
+
+Selamat menikmati arsitektur baru! Jika menemukan kendala atau ingin menambahkan fitur, lanjutkan dengan membuat branch baru dan pull request sesuai kebutuhan.
