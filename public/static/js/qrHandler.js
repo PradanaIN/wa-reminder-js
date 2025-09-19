@@ -1,14 +1,19 @@
 let qrContainer = null;
 let qrCanvas = null;
+let domReadyListenerRegistered = false;
 
-export async function fetchQRCode() {
-  // Delay cek elemen sampai DOM siap
+function resolveQRElements() {
   if (!qrContainer || !qrCanvas) {
     qrContainer = document.getElementById("qrContainer");
     qrCanvas = document.getElementById("qrCanvas");
   }
 
-  if (!qrContainer || !qrCanvas) {
+  return Boolean(qrContainer && qrCanvas);
+}
+
+export async function fetchQRCode() {
+  // Delay cek elemen sampai DOM siap
+  if (!resolveQRElements()) {
     console.warn("Elemen QR tidak ditemukan di DOM.");
     return;
   }
@@ -32,20 +37,31 @@ export async function fetchQRCode() {
 
 // Optional helper untuk init dari luar
 export function initQRHandler() {
-  document.addEventListener("DOMContentLoaded", () => {
-    qrContainer = document.getElementById("qrContainer");
-    qrCanvas = document.getElementById("qrCanvas");
+  const triggerFetch = () => {
+    resolveQRElements();
     fetchQRCode();
-  });
+  };
+
+  if (document.readyState === "loading") {
+    if (domReadyListenerRegistered) return;
+
+    domReadyListenerRegistered = true;
+
+    const onReady = () => {
+      document.removeEventListener("DOMContentLoaded", onReady);
+      domReadyListenerRegistered = false;
+      triggerFetch();
+    };
+
+    document.addEventListener("DOMContentLoaded", onReady);
+    return;
+  }
+
+  triggerFetch();
 }
 
 export function renderQR(data) {
-  if (!qrContainer || !qrCanvas) {
-    qrContainer = document.getElementById("qrContainer");
-    qrCanvas = document.getElementById("qrCanvas");
-  }
-
-  if (!qrContainer || !qrCanvas) {
+  if (!resolveQRElements()) {
     console.warn("Elemen QR tidak ditemukan di DOM");
     return;
   }
