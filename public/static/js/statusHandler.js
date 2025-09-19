@@ -10,13 +10,13 @@ export function updateStatus(data) {
   stopBtn.disabled = !data.active;
 }
 
-export async function fetchStatus() {
+export async function fetchStatus(shouldRepeat = false) {
   try {
     const res = await fetch("/bot/status");
     const data = await res.json();
     updateStatus(data);
 
-    if (repeat && !data.active) {
+    if (shouldRepeat && !data.active) {
       setTimeout(() => fetchStatus(true), 1000); // coba lagi tiap 1 detik
     }
   } catch (e) {
