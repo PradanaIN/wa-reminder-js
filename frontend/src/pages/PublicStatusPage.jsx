@@ -16,6 +16,9 @@ export default function PublicStatusPage() {
 
   const schedule = scheduleData?.schedule;
   const nextRun = nextRunData?.nextRun;
+  const hasDailySchedule = Boolean(
+    schedule?.dailyTimes && Object.values(schedule.dailyTimes).some(Boolean)
+  );
 
   return (
     <PublicLayout>
@@ -120,6 +123,89 @@ export default function PublicStatusPage() {
           >
             Buka dashboard admin
           </a>
+        </Card>
+      </section>
+
+      <section id="schedule" className="mt-16 space-y-10">
+        <Card className="relative overflow-hidden border-white/10 bg-slate-900/75 px-6 py-10 shadow-2xl sm:px-10">
+          <div className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 bg-gradient-to-l from-primary-500/20 to-transparent blur-3xl sm:block" />
+          <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:items-start">
+            <div className="space-y-6">
+              <Badge variant="info" className="w-fit uppercase tracking-wide">
+                Jadwal otomatis
+              </Badge>
+              <div className="space-y-3">
+                <h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
+                  Lihat jam pengiriman default setiap harinya.
+                </h2>
+                <p className="text-base text-slate-300">
+                  Jadwal ini menjadi acuan utama kapan bot mengirim pesan pengingat ke tim Anda. Override manual akan
+                  menggantikan jadwal di tanggal tertentu, tetapi akan kembali ke pola default setelahnya.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-300">
+                {schedule?.timezone ? (
+                  <span className="rounded-full bg-slate-800/70 px-3 py-1 text-slate-200">
+                    Zona waktu {schedule.timezone}
+                  </span>
+                ) : null}
+                {schedule?.paused ? (
+                  <span className="rounded-full bg-amber-500/20 px-3 py-1 text-amber-100">
+                    Penjadwalan dijeda
+                  </span>
+                ) : hasDailySchedule ? (
+                  <span className="rounded-full bg-primary-500/15 px-3 py-1 text-primary-200">
+                    Penjadwalan aktif
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-sm text-slate-400">
+                Untuk mengubah jam pengiriman atau menambah override manual, masuk ke dashboard admin dan atur jadwal
+                sesuai kebutuhan operasional Anda.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {scheduleLoading ? (
+                <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-4 w-64" />
+                  </div>
+                  <ScheduleGrid loading readOnly values={null} />
+                </div>
+              ) : hasDailySchedule ? (
+                <div className="space-y-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Jadwal default</p>
+                    <p className="text-sm text-slate-300">
+                      Waktu yang ditampilkan mengikuti zona waktu {schedule?.timezone ?? 'yang ditentukan'}.
+                    </p>
+                  </div>
+                  <ScheduleGrid readOnly values={schedule.dailyTimes} />
+                  {schedule?.paused ? (
+                    <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
+                      Penjadwalan otomatis sementara dijeda. Override manual tetap berjalan sesuai rencana.
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="space-y-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Jadwal default</p>
+                    <p className="text-sm text-slate-300">
+                      Belum ada jam pengiriman harian yang diatur. Semua pengiriman akan mengandalkan override manual.
+                    </p>
+                  </div>
+                  <DataPlaceholder
+                    icon={null}
+                    title="Belum ada jadwal"
+                    description="Masuk sebagai admin untuk menetapkan jam pengiriman harian agar bot berjalan otomatis."
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </Card>
       </section>
     </PublicLayout>
