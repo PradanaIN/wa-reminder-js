@@ -38,7 +38,10 @@ async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const message = payload?.message || payload || `Request failed with status ${response.status}`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
   }
 
   return payload;

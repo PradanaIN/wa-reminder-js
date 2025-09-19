@@ -7,12 +7,29 @@ import { useSession } from './queries/auth.js';
 import { Spinner } from './components/ui/Spinner.jsx';
 
 function ProtectedRoute({ children }) {
-  const { data, isLoading } = useSession();
+  const { data, error, isLoading } = useSession();
+  const isUnauthorized =
+    !!error &&
+    (error.status === 401 ||
+      error.status === 403 ||
+      /401|403|unauthorized|forbidden/i.test(error.message ?? ''));
+
+  if (isUnauthorized) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
+        <p>Gagal memuat sesi. Silakan coba lagi.</p>
       </div>
     );
   }

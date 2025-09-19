@@ -8,6 +8,7 @@ export function useSession() {
     queryKey: SESSION_QUERY_KEY,
     queryFn: () => apiRequest('/api/auth/session'),
     staleTime: 1000 * 60,
+    retry: false,
   });
 }
 
