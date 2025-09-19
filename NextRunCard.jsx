@@ -55,7 +55,7 @@ export function NextRunCard({ nextRun, loading }) {
             <p className="font-semibold">Override manual aktif</p>
             <p>
               {details.override.date} pukul {details.override.time}
-              {details.override.note ?  -  : ''}
+              {details.override.note ? ` - ${details.override.note}` : ''}
             </p>
           </div>
         ) : (

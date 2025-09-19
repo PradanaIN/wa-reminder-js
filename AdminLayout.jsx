@@ -16,13 +16,13 @@ export function AdminLayout({
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link to="/" className="text-lg font-semibold tracking-tight text-white">
-            WA Reminder · Admin
+            WA Reminder ï¿½ Admin
           </Link>
           <div className="flex items-center gap-4 text-sm text-slate-300">
             {loading ? (
               <div className="hidden h-4 w-32 animate-pulse rounded-full bg-slate-800/70 sm:block" />
             ) : (
-              <span className="hidden sm:inline">{Masuk sebagai }</span>
+              <span className="hidden sm:inline">{`Masuk sebagai ${username}`}</span>
             )}
             {loading ? (
               <div className="h-9 w-20 animate-pulse rounded-xl bg-slate-800/70" />
