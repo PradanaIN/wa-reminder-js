@@ -10,8 +10,3 @@ backend/storage/schedule-config.json
 .github/workflows/
 backend/config/*.json
 frontend/dist/
-.env
-backend/.env
-backend/.env.production
-frontend/.env
-
