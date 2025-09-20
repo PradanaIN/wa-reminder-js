@@ -2,16 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const { quotes } = require('../utils/quotes');
 const { resetHeartbeat } = require('../utils/heartbeat');
-const { loadContactsFromSheets } = require('../utils/contacts');
+const { getAllContacts } = require('../services/contactService');
 
 async function loadContacts() {
   try {
-    const contacts = await loadContactsFromSheets();
-    if (!Array.isArray(contacts) || contacts.length === 0) {
+    const contacts = await getAllContacts();
+    const eligibleContacts = Array.isArray(contacts)
+      ? contacts.filter((contact) => contact.status === 'masuk')
+      : [];
+
+    if (!Array.isArray(eligibleContacts) || eligibleContacts.length === 0) {
       console.log('[Message] Tidak ada kontak yang ditemukan.');
       return [];
     }
-    return contacts;
+    return eligibleContacts.map(({ name, number }) => ({ name, number }));
   } catch (err) {
     console.error('[Message] Gagal baca kontak:', err);
     return [];
