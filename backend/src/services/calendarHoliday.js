@@ -7,7 +7,13 @@ const { authorize } = require("./calendarAuth");
  * @returns {Promise<Array>}
  */
 async function getTodayIsHoliday(date = new Date()) {
-  const auth = await authorize();
+  let auth;
+  try {
+    auth = await authorize();
+  } catch (err) {
+    err.message = `Gagal otorisasi Google Calendar: ${err.message}`;
+    throw err;
+  }
   const calendar = google.calendar({ version: "v3", auth });
 
   // Buat rentang waktu dari jam 00:00 sampai 23:59 tanggal tsb

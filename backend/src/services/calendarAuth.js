@@ -44,8 +44,9 @@ function promptForAuth(oAuth2Client) {
 
 async function authorize(forceLogin = false) {
   const oAuth2Client = createOAuthClient();
+  let tokenValid = false;
 
-  if (!forceLogin && fs.existsSync(TOKEN_PATH)) {
+  if (fs.existsSync(TOKEN_PATH)) {
     try {
       const token = JSON.parse(fs.readFileSync(TOKEN_PATH, "utf-8"));
       oAuth2Client.setCredentials(token);
@@ -53,20 +54,34 @@ async function authorize(forceLogin = false) {
       // Test token by calling a safe method
       const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
       await calendar.calendarList.list(); // dummy safe request
-      return oAuth2Client;
+      tokenValid = true;
     } catch (err) {
       console.warn("⚠️ Token rusak atau kadaluarsa:", err.message);
     }
+  } else {
+    console.warn("⚠️ Token Google Calendar tidak ditemukan di", TOKEN_PATH);
   }
 
-  // Fallback ke login ulang
-  return await promptForAuth(oAuth2Client);
+  if (tokenValid) {
+    return oAuth2Client;
+  }
+
+  if (forceLogin) {
+    console.log("🔄 Memulai proses login interaktif untuk Google Calendar...");
+    return await promptForAuth(oAuth2Client);
+  }
+
+  const error = new Error(
+    "Google Calendar token tidak ditemukan atau tidak valid. Jalankan `node backend/src/services/calendarAuth.js` untuk login ulang."
+  );
+  error.code = "GOOGLE_CALENDAR_TOKEN_MISSING";
+  throw error;
 }
 
 module.exports = { authorize };
 
 if (require.main === module) {
-  authorize()
+  authorize(true)
     .then(() => {
       console.log("✅ Proses otorisasi selesai.");
     })
