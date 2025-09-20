@@ -59,7 +59,7 @@ export default function PublicStatusPage() {
                 Sistem Informasi Pengingat Presensi (SIGAP)
               </h1>
               <p className="text-base text-slate-400">
-                Sistem ini membantu Anda memantau pengingat WhatsApp Bot
+                Sistem ini membantu Anda memantau WhatsApp Bot pengingat
                 presensi dalam satu halaman terpusat, memungkinkan pengaturan
                 jadwal pengiriman otomatis, penyesuaian jadwal manual, serta
                 pemantauan status koneksi bot.
@@ -325,7 +325,16 @@ export default function PublicStatusPage() {
                       {schedule?.timezone ?? "yang ditentukan"}.
                     </p>
                   </div>
-                  <ScheduleGrid readOnly values={dailyTimes} timeSuffix={(schedule?.timezone === 'Asia/Makassar' && 'WITA') || (schedule?.timezone === 'Asia/Jakarta' && 'WIB') || (schedule?.timezone === 'Asia/Jayapura' && 'WIT') || undefined} />
+                  <ScheduleGrid
+                    readOnly
+                    values={dailyTimes}
+                    timeSuffix={
+                      (schedule?.timezone === "Asia/Makassar" && "WITA") ||
+                      (schedule?.timezone === "Asia/Jakarta" && "WIB") ||
+                      (schedule?.timezone === "Asia/Jayapura" && "WIT") ||
+                      undefined
+                    }
+                  />
                   {schedule?.paused && (
                     <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
                       Penjadwalan otomatis sementara dijeda. Override manual
@@ -358,5 +367,3 @@ export default function PublicStatusPage() {
     </PublicLayout>
   );
 }
-
-
