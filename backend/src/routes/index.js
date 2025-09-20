@@ -8,7 +8,9 @@ const systemRoutes = require('./systemRoutes');
 const templateRoutes = require('./templateRoutes');
 const scheduleAdminRoutes = require('./scheduleAdminRoutes');
 const schedulePublicRoutes = require('./schedulePublicRoutes');
+const calendarAdminRoutes = require('./calendarAdminRoutes');
 const adminBotRoutes = require('./adminBotRoutes');
+const adminContactRoutes = require('./adminContactRoutes');
 const webRoutes = require('./webRoutes');
 
 function registerRoutes(app) {
@@ -19,7 +21,9 @@ function registerRoutes(app) {
   app.use('/api/templates', apiKeyAuth, templateRoutes);
   app.use('/api/admin/templates', requireAdmin, templateRoutes);
   app.use('/api/admin/bot', requireAdmin, adminBotRoutes);
+  app.use('/api/admin/calendar', requireAdmin, calendarAdminRoutes);
   app.use('/api/admin/schedule', requireAdmin, scheduleAdminRoutes);
+  app.use('/api/admin/contacts', requireAdmin, adminContactRoutes);
   app.use('/api/schedule', schedulePublicRoutes);
   app.use('/', webRoutes);
 

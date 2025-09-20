@@ -5,20 +5,46 @@ const baseClasses =
 
 // Variant styles (fill)
 const variants = {
+<<<<<<< HEAD
   primary: "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-400 focus-visible:ring-primary-500",
   secondary: "bg-slate-800 text-slate-100 shadow-inner shadow-slate-900/40 hover:bg-slate-700 focus-visible:ring-slate-500",
   ghost: "bg-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500",
   danger: "bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-400 focus-visible:ring-rose-500",
   success: "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 focus-visible:ring-emerald-500",
+=======
+  primary:
+    'bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-400 focus-visible:ring-primary-500',
+  secondary:
+    'bg-slate-800 text-slate-100 shadow-inner shadow-slate-900/40 hover:bg-slate-700 focus-visible:ring-slate-500',
+  ghost:
+    'bg-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500',
+  danger:
+    'bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-400 focus-visible:ring-rose-500',
+  success:
+    'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 focus-visible:ring-emerald-500',
+>>>>>>> 39fee1ae8834b9e8458174dc9340aed9f4167f2e
 };
 
 // Variant styles (outline)
 const outlines = {
+<<<<<<< HEAD
   primary: "border border-primary-500/50 text-primary-200 hover:bg-primary-500/10 focus-visible:ring-primary-500",
   secondary: "border border-slate-600 text-slate-200 hover:bg-slate-700/40 focus-visible:ring-slate-500",
   ghost: "border border-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500",
   danger: "border border-rose-500/40 text-rose-200 hover:bg-rose-500/10 focus-visible:ring-rose-500",
   success: "border border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/10 focus-visible:ring-emerald-500",
+=======
+  primary:
+    'border border-primary-500/50 text-primary-200 hover:bg-primary-500/10 focus-visible:ring-primary-500',
+  secondary:
+    'border border-slate-600 text-slate-200 hover:bg-slate-700/40 focus-visible:ring-slate-500',
+  ghost:
+    'border border-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500',
+  danger:
+    'border border-rose-500/40 text-rose-200 hover:bg-rose-500/10 focus-visible:ring-rose-500',
+  success:
+    'border border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/10 focus-visible:ring-emerald-500',
+>>>>>>> 39fee1ae8834b9e8458174dc9340aed9f4167f2e
 };
 
 // Sizes

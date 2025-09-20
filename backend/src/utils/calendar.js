@@ -1,32 +1,35 @@
-const fs = require('fs');
-const path = require('path');
 const moment = require('moment-timezone');
 const { getTodayIsHoliday } = require('../services/calendarHoliday');
 const config = require('../config/env');
+const {
+  getLocalCalendar,
+  onLocalCalendarChange,
+} = require('../services/localCalendarService');
 
 const TIMEZONE = config.timezone;
 
 let LIBURAN = new Set();
 let CUTI_BERSAMA = new Set();
 
-function loadLocalHolidays() {
-  try {
-    const raw = fs.readFileSync(
-      path.join(__dirname, '..', 'templates', 'calendar_local.json'),
-      'utf-8'
-    );
-    const parsed = JSON.parse(raw);
-    LIBURAN = new Set(parsed.LIBURAN);
-    CUTI_BERSAMA = new Set(parsed.CUTI_BERSAMA);
-  } catch (err) {
-    console.error('[Calendar] Gagal memuat data calendar_local.json:', err.message);
-  }
+function applyLocalCalendar(data = {}) {
+  LIBURAN = new Set(Array.isArray(data.LIBURAN) ? data.LIBURAN : []);
+  CUTI_BERSAMA = new Set(Array.isArray(data.CUTI_BERSAMA) ? data.CUTI_BERSAMA : []);
 }
 
-loadLocalHolidays();
-
-let isChecking = false;
 const workdayCache = {};
+let isChecking = false;
+
+function clearCalendarCache() {
+  Object.keys(workdayCache).forEach((key) => delete workdayCache[key]);
+  console.log('[Calendar] Cache kalender telah direset.');
+}
+
+applyLocalCalendar(getLocalCalendar());
+
+onLocalCalendarChange((data) => {
+  applyLocalCalendar(data);
+  clearCalendarCache();
+});
 
 function isWorkDay(date = moment().tz(TIMEZONE), addLog = () => {}) {
   const todayStr = date.format('YYYY-MM-DD');
@@ -123,11 +126,6 @@ async function getNextWorkDay(startDate = moment().tz(TIMEZONE), addLog = () => 
 
     date.add(1, 'day');
   }
-}
-
-function clearCalendarCache() {
-  Object.keys(workdayCache).forEach((key) => delete workdayCache[key]);
-  console.log('[Calendar] Cache kalender telah direset.');
 }
 
 module.exports = {

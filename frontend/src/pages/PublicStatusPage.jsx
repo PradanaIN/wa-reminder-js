@@ -250,7 +250,7 @@ export default function PublicStatusPage() {
                           <div className="flex items-center justify-between text-xs text-slate-400">
                             <span>{d}</span>
                             <span>
-                              {m} pesan, {e} error
+                              {m} pesan, {err} error
                             </span>
                           </div>
                           <div className="h-2 overflow-hidden rounded-full bg-slate-800">

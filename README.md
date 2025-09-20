@@ -2,42 +2,41 @@
 
 Sistem pengingat WhatsApp yang kini dibagi menjadi dua aplikasi: **backend** untuk bot dan API, serta **frontend** untuk antarmuka admin/publik. Arsitektur baru ini memudahkan pengelolaan jadwal, meningkatkan reliabilitas, dan memberikan pengalaman pengguna yang lebih baik.
 
-## Apa yang baru?
+## Apa yang ada?
 
-- ?? **Monorepo terstruktur** (`backend/` + `frontend/`).
-- ?? **Konfigurasi jadwal dinamis** per hari dan override manual per tanggal.
-- ?? **Penjadwalan ulang otomatis** ketika jadwal diubah atau override ditambahkan.
-- ?? **Otorisasi berlapis**: halaman publik tanpa login, dashboard admin dengan sesi, API kontrol tetap memakai API key.
-- ?? **Dashboard admin baru (React + Tailwind)** untuk mengatur jadwal, override, log, dan kontrol bot.
-- ?? **Halaman status publik** yang menampilkan jadwal dan pengiriman berikutnya secara real-time.
-- ????? **Reliabilitas bot ditingkatkan** dengan pemeriksaan koneksi periodik, watcher konfigurasi, dan restart otomatis.
+- **Monorepo terstruktur** (`backend/` + `frontend/`).
+- **Konfigurasi jadwal dinamis** per hari dan override manual per tanggal.
+- **Penjadwalan ulang otomatis** ketika jadwal diubah atau override ditambahkan.
+- **Otorisasi berlapis**: halaman publik tanpa login, dashboard admin dengan sesi, API kontrol tetap memakai API key.
+- **Dashboard admin baru (React + Tailwind)** untuk mengatur jadwal, override, log, dan kontrol bot.
+- **Halaman status publik** yang menampilkan jadwal dan pengiriman berikutnya secara real-time.
+- **Reliabilitas bot ditingkatkan** dengan pemeriksaan koneksi periodik, watcher konfigurasi, dan restart otomatis.
 
 ## Arsitektur
 
-```
+```bash
 wa-reminder/
 +- backend/              # Layanan Express + WhatsApp bot
-¦  +- src/
-¦  ¦  +- app.js         # Inisialisasi Express & middleware
-¦  ¦  +- server.js      # HTTP + Socket.IO bootstrap
-¦  ¦  +- controllers/   # Logika bot, pesan, jadwal
-¦  ¦  +- jobs/          # Penjadwal dinamis
-¦  ¦  +- routes/        # Endpoint API & halaman server-side
-¦  ¦  +- services/      # scheduleService, Google API, dll
-¦  ¦  +- utils/         # Kalender, logger, socket handler
-¦  ¦  +- views/         # Halaman fallback server-side (EJS)
-¦  +- public/           # Aset statis backend (legacy dashboard)
-¦  +- storage/          # `schedule-config.json`, sesi WhatsApp
-¦  +- logs/             # Log ter-rotate
-¦
+Â¦  +- src/
+Â¦  Â¦  +- app.js         # Inisialisasi Express & middleware
+Â¦  Â¦  +- server.js      # HTTP + Socket.IO bootstrap
+Â¦  Â¦  +- controllers/   # Logika bot, pesan, jadwal
+- Kredensial Google Calendar (opsional bila menggunakan integrasi kalender libur).
+- **Manajemen kontak pegawai**: Data kontak WhatsApp tersimpan permanen di `backend/storage/contacts.json` dan dapat diubah melalui API/halaman admin.
+- **Manajemen kontak** (`/admin/contacts`): tambah, ubah, hapus kontak pegawai, serta ubah status kehadiran mereka.
+Â¦  Â¦  +- views/         # Halaman fallback server-side (EJS)
+Â¦  +- public/           # Aset statis backend (legacy dashboard)
+Â¦  +- storage/          # `schedule-config.json`, sesi WhatsApp
+Â¦  +- logs/             # Log ter-rotate
+Â¦
 +- frontend/            # Aplikasi Vite + React (UI baru)
-¦  +- src/
-¦  ¦  +- pages/         # PublicStatus, AdminLogin, AdminDashboard
-¦  ¦  +- queries/       # React Query hooks (auth, schedule, bot)
-¦  ¦  +- components/    # UI kit & komponen utilitas
-¦  ¦  +- lib/           # API client
-¦  +- public/           # Aset build Vite
-¦
+Â¦  +- src/
+Â¦  Â¦  +- pages/         # PublicStatus, AdminLogin, AdminDashboard
+Â¦  Â¦  +- queries/       # React Query hooks (auth, schedule, bot)
+Â¦  Â¦  +- components/    # UI kit & komponen utilitas
+Â¦  Â¦  +- lib/           # API client
+Â¦  +- public/           # Aset build Vite
+Â¦
 +- package.json         # Workspaces + shared scripts
 +- README.md
 ```
@@ -159,13 +158,13 @@ Hasil build frontend berada di `frontend/dist/`. Sajikan folder ini melalui CDN 
 
 ## Script bantu (root)
 
-| Perintah                | Deskripsi                                      |
-|------------------------|--------------------------------------------------|
-| `npm run dev`          | Jalankan backend + frontend bersamaan            |
-| `npm run dev:backend`  | Jalankan backend saja (nodemon)                  |
-| `npm run dev:frontend` | Jalankan frontend (Vite)                         |
-| `npm run build`        | Build frontend (backend tidak memerlukan build)  |
-| `npm run lint`         | Lint backend (`eslint --ext .js src`)            |
+| Perintah                 | Deskripsi                                       |
+| ------------------------ | ----------------------------------------------- |
+| `npm run dev`          | Jalankan backend + frontend bersamaan           |
+| `npm run dev:backend`  | Jalankan backend saja (nodemon)                 |
+| `npm run dev:frontend` | Jalankan frontend (Vite)                        |
+| `npm run build`        | Build frontend (backend tidak memerlukan build) |
+| `npm run lint`         | Lint backend (`eslint --ext .js src`)         |
 
 ---
 

@@ -12,7 +12,7 @@ import { OverrideTable } from '../components/OverrideTable';
 export default function AdminOverridesPage() {
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
-  const { data: scheduleResponse, isLoading: scheduleLoading } = useAdminSchedule();
+  const { data: scheduleResponse } = useAdminSchedule();
   const addOverrideMutation = useAddOverride();
   const removeOverrideMutation = useRemoveOverride();
 

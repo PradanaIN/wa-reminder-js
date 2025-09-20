@@ -72,10 +72,22 @@ export function AdminLayout({
               Override
             </Link>
             <Link
+                to="/admin/contacts"
+                className={isActive("/admin/contacts")}
+              >
+                Kontak
+              </Link>
+            <Link
+              to="/admin/holidays"
+              className={isActive("/admin/holidays")}
+            >
+              Kalender
+            </Link>
+            <Link
               to="/admin/templates"
               className={isActive("/admin/templates")}
             >
-              Template
+            Template
             </Link>
           </div>
         </div>

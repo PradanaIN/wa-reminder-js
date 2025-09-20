@@ -3,8 +3,10 @@ import PublicStatusPage from './pages/PublicStatusPage.jsx';
 import AdminLoginPage from './pages/AdminLoginPage.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminTemplatesPage from './pages/AdminTemplatesPage.jsx';
+import AdminHolidaysPage from './pages/AdminHolidaysPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import AdminOverridesPage from './pages/AdminOverridesPage.jsx';
+import AdminContactsPage from './pages/AdminContactsPage.jsx';
 import { useSession } from './queries/auth.js';
 import { Spinner } from './components/ui/Spinner.jsx';
 
@@ -62,10 +64,26 @@ export default function App() {
         }
       />
       <Route
+        path="/admin/contacts"
+        element={
+          <ProtectedRoute>
+            <AdminContactsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/overrides"
         element={
           <ProtectedRoute>
             <AdminOverridesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/holidays"
+        element={
+          <ProtectedRoute>
+            <AdminHolidaysPage />
           </ProtectedRoute>
         }
       />
