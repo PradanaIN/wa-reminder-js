@@ -17,6 +17,7 @@ import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import { Spinner } from "../components/ui/Spinner";
 import { AdminLayout } from "../components/layout/AdminLayout";
+import { useToast } from "../components/ui/ToastProvider.jsx";
 import { MetricCard } from "../components/ui/MetricCard";
 
 const DEFAULT_TIMES = {
@@ -74,7 +75,13 @@ export default function AdminDashboardPage() {
     const normalized = Object.fromEntries(
       Object.entries(dailyTimes).map(([day, value]) => [day, value || null])
     );
-    updateScheduleMutation.mutate({ dailyTimes: normalized, timezone, paused });
+    updateScheduleMutation.mutate(
+      { dailyTimes: normalized, timezone, paused },
+      {
+        onSuccess: () => addToast("Jadwal berhasil disimpan.", { type: "success" }),
+        onError: (err) => addToast(err?.message || "Gagal menyimpan jadwal.", { type: "error" }),
+      }
+    );
   };
 
   const metrics = useMemo(
@@ -179,10 +186,39 @@ export default function AdminDashboardPage() {
         {/* Content Tabs: Log | Jadwal | Berikutnya */}
         <section>
           <Card className="space-y-6 border-white/10 bg-slate-900/70 p-0">
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
-              <button onClick={() => setPanelTab("logs")} className={panelTab === "logs" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Log</button>
-              <button onClick={() => setPanelTab("schedule")} className={panelTab === "schedule" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Jadwal</button>
-              <button onClick={() => setPanelTab("next")} className={panelTab === "next" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Berikutnya</button>
+            <div className="px-4 pt-4">
+              <div className="inline-flex w-full max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-white/10 bg-slate-950/60 p-1 text-sm">
+                <button
+                  onClick={() => setPanelTab("logs")}
+                  className={
+                    panelTab === "logs"
+                      ? "flex-1 rounded-lg bg-primary-500/20 px-4 py-2 font-semibold text-white shadow-inner shadow-primary-500/20"
+                      : "flex-1 rounded-lg px-4 py-2 text-slate-300 hover:bg-white/5 hover:text-white"
+                  }
+                >
+                  Log
+                </button>
+                <button
+                  onClick={() => setPanelTab("schedule")}
+                  className={
+                    panelTab === "schedule"
+                      ? "flex-1 rounded-lg bg-primary-500/20 px-4 py-2 font-semibold text-white shadow-inner shadow-primary-500/20"
+                      : "flex-1 rounded-lg px-4 py-2 text-slate-300 hover:bg-white/5 hover:text-white"
+                  }
+                >
+                  Jadwal
+                </button>
+                <button
+                  onClick={() => setPanelTab("next")}
+                  className={
+                    panelTab === "next"
+                      ? "flex-1 rounded-lg bg-primary-500/20 px-4 py-2 font-semibold text-white shadow-inner shadow-primary-500/20"
+                      : "flex-1 rounded-lg px-4 py-2 text-slate-300 hover:bg-white/5 hover:text-white"
+                  }
+                >
+                  Berikutnya
+                </button>
+              </div>
             </div>
 
             <div className="p-6">
@@ -225,7 +261,17 @@ export default function AdminDashboardPage() {
                       <Button type="submit" disabled={updateScheduleMutation.isLoading}>
                         {updateScheduleMutation.isLoading ? "Menyimpan..." : "Simpan Jadwal"}
                       </Button>
-                      <Button type="button" variant="ghost" onClick={() => schedule && setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) })}>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          if (!schedule) return;
+                          const ok = window.confirm("Reset perubahan jadwal? Perubahan belum disimpan akan hilang.");
+                          if (!ok) return;
+                          setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) });
+                          addToast("Perubahan jadwal direset.", { type: "info" });
+                        }}
+                      >
                         Reset perubahan
                       </Button>
                     </div>
@@ -245,7 +291,21 @@ export default function AdminDashboardPage() {
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
                 <p className="text-xs text-slate-300">Perubahan belum disimpan</p>
                 <div className="flex gap-3">
-                  <Button type="button" variant="ghost" onClick={() => schedule && (setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) }), setTimezone(schedule.timezone || "Asia/Makassar"), setPaused(Boolean(schedule.paused)))}>Reset</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      if (!schedule) return;
+                      const ok = window.confirm("Reset perubahan jadwal?");
+                      if (!ok) return;
+                      setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) });
+                      setTimezone(schedule.timezone || "Asia/Makassar");
+                      setPaused(Boolean(schedule.paused));
+                      addToast("Perubahan jadwal direset.", { type: "info" });
+                    }}
+                  >
+                    Reset
+                  </Button>
                   <Button onClick={handleScheduleSubmit}>Simpan</Button>
                 </div>
               </div>
@@ -256,3 +316,4 @@ export default function AdminDashboardPage() {
     </AdminLayout>
   );
 }
+  const { add: addToast } = useToast();

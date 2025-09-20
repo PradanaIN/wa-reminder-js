@@ -66,7 +66,7 @@ export function ScheduleGrid({
 
             {readOnly ? (
               <p className="text-lg font-semibold text-white">
-                {value ? `${value} WIB` : (Number(day) >= 6 ? "Libur" : "Tidak dijadwalkan")}
+                {value ? `${value} WITA` : (Number(day) >= 6 ? "Libur" : "Tidak dijadwalkan")}
               </p>
             ) : (
               <Input

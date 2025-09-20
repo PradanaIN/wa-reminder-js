@@ -215,7 +215,9 @@ export default function AdminLoginPage() {
 
           <Button
             type="submit"
-            className="group w-full rounded-lg py-2.5 font-semibold transition-transform hover:scale-[1.01] hover:shadow-lg disabled:translate-y-0"
+            variant="primary"
+            size="lg"
+            className="group w-full rounded-lg py-2.5 font-semibold"
             disabled={loginMutation.isLoading}
           >
             {loginMutation.isLoading ? (

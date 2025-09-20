@@ -47,8 +47,8 @@ export function ThemeToggle({ className = '' }) {
           checked={theme === 'light'}
           onChange={(e) => setTheme(e.target.checked ? 'light' : 'dark')}
         />
-        <div className="relative h-5 w-10 rounded-full bg-slate-600 transition peer-checked:bg-primary-500">
-          <div className="absolute m-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ease-out peer-checked:translate-x-5" />
+        <div className="relative h-5 w-10 rounded-full bg-slate-600 transition-colors duration-200 ease-out peer-checked:bg-primary-500">
+          <div className="absolute m-0.5 h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-out peer-checked:translate-x-5" />
         </div>
       </label>
 

@@ -8,6 +8,9 @@ import { Label } from '../components/ui/Label';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { Modal } from '../components/ui/Modal';
+import { Trash } from '../components/ui/icons';
+import { useToast } from '../components/ui/ToastProvider.jsx';
 
 function arraysEqual(left = [], right = []) {
   if (left.length !== right.length) return false;
@@ -15,6 +18,7 @@ function arraysEqual(left = [], right = []) {
 }
 
 export default function AdminHolidaysPage() {
+  const { add: addToast } = useToast();
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
   const {
@@ -31,6 +35,8 @@ export default function AdminHolidaysPage() {
   const [holidayInput, setHolidayInput] = useState('');
   const [jointLeaveInput, setJointLeaveInput] = useState('');
   const [formError, setFormError] = useState('');
+  const [activeTab, setActiveTab] = useState('holidays'); // 'holidays' | 'joint'
+  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
     if (!sessionLoading && !session?.authenticated) {
@@ -93,32 +99,47 @@ export default function AdminHolidaysPage() {
   };
 
   const handleRemoveHoliday = (date) => {
+    const ok = window.confirm(`Hapus tanggal libur ${date}?`);
+    if (!ok) return;
     setFormError('');
     updateMutation.reset();
     setHolidays((prev) => prev.filter((item) => item !== date));
+    addToast('Tanggal libur dihapus dari daftar.', { type: 'success' });
   };
 
   const handleRemoveJointLeave = (date) => {
+    const ok = window.confirm(`Hapus tanggal cuti bersama ${date}?`);
+    if (!ok) return;
     setFormError('');
     updateMutation.reset();
     setJointLeaves((prev) => prev.filter((item) => item !== date));
+    addToast('Tanggal cuti bersama dihapus dari daftar.', { type: 'success' });
   };
 
   const handleSave = (event) => {
     event.preventDefault();
     setFormError('');
-    updateMutation.mutate({
-      LIBURAN: [...holidays],
-      CUTI_BERSAMA: [...jointLeaves],
-    });
+    updateMutation.mutate(
+      {
+        LIBURAN: [...holidays],
+        CUTI_BERSAMA: [...jointLeaves],
+      },
+      {
+        onSuccess: () => addToast('Kalender berhasil diperbarui.', { type: 'success' }),
+        onError: (err) => addToast(err?.message || 'Gagal menyimpan kalender.', { type: 'error' }),
+      }
+    );
   };
 
   const handleReset = () => {
     if (!calendar) return;
+    const ok = window.confirm('Reset perubahan kalender?');
+    if (!ok) return;
     setFormError('');
     updateMutation.reset();
     setHolidays([...(calendar.LIBURAN ?? [])].sort());
     setJointLeaves([...(calendar.CUTI_BERSAMA ?? [])].sort());
+    addToast('Perubahan kalender direset.', { type: 'info' });
   };
 
   const isCalendarPending = calendarLoading && !calendar;
@@ -126,152 +147,117 @@ export default function AdminHolidaysPage() {
   return (
     <AdminLayout username={session?.user?.username} loading={sessionLoading}>
       <div className="space-y-8">
-        <Card className="space-y-6 border-white/10 bg-slate-900/70 p-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-white">Kalender Hari Libur Lokal</h1>
-            <p className="text-sm text-slate-400">
-              Atur daftar hari libur dan cuti bersama yang digunakan penjadwal saat Google
-              Calendar tidak tersedia.
-            </p>
-            {calendarFetching && !calendarLoading ? (
-              <p className="text-xs text-slate-400">Memuat pembaruan terbaru...</p>
-            ) : null}
-          </div>
-
+        <Card
+          className="space-y-6 border-white/10 bg-slate-900/70 p-0"
+          header={
+            <div className="flex items-center justify-between px-6 py-4">
+              <div className="space-y-1">
+                <h1 className="text-2xl font-semibold text-white">Pengaturan Kalender</h1>
+                <p className="text-sm text-slate-400">Kelola tanggal Hari Libur dan Cuti Bersama.</p>
+              </div>
+              <Button onClick={() => setAddOpen(true)}>
+                <span className="sm:hidden">+</span>
+                <span className="hidden sm:inline">+ Tambah</span>
+              </Button>
+            </div>
+          }
+        >
           {isCalendarPending ? (
-            <div className="flex items-center gap-3 text-slate-300">
+            <div className="flex items-center gap-3 px-6 pb-6 text-slate-300">
               <Spinner /> Memuat data kalender...
             </div>
           ) : (
-            <form className="space-y-10" onSubmit={handleSave}>
-              <section className="grid gap-6 lg:grid-cols-2">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="holiday-date">Tambah Hari Libur</Label>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Input
-                        id="holiday-date"
-                        type="date"
-                        value={holidayInput}
-                        onChange={(event) => setHolidayInput(event.target.value)}
-                        className="sm:flex-1"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddHoliday}
-                        disabled={!holidayInput || updateMutation.isLoading}
-                      >
-                        Tambah
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Label>Daftar Hari Libur</Label>
-                    <ul className="space-y-2">
-                      {holidays.length === 0 ? (
-                        <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">
-                          Belum ada tanggal yang terdaftar.
-                        </li>
-                      ) : (
-                        holidays.map((date) => (
-                          <li
-                            key={date}
-                            className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm"
-                          >
-                            <span className="font-medium text-slate-100">{date}</span>
-                            <Button
-                              type="button"
-                              variant="danger"
-                              outline
-                              size="sm"
-                              onClick={() => handleRemoveHoliday(date)}
-                            >
-                              Hapus
-                            </Button>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-                </div>
+            <form className="space-y-8 px-6 pb-6" onSubmit={handleSave}>
+              <div className="inline-flex w-full items-center gap-1 rounded-xl border border-white/10 bg-slate-950/60 p-1 text-sm">
+                <button type="button" onClick={() => setActiveTab('holidays')} className={activeTab === 'holidays' ? 'flex-1 rounded-lg bg-primary-500/20 px-4 py-2 font-semibold text-white shadow-inner shadow-primary-500/20' : 'flex-1 rounded-lg px-4 py-2 text-slate-300 hover:bg-white/5 hover:text-white'}>
+                  Hari Libur
+                </button>
+                <button type="button" onClick={() => setActiveTab('joint')} className={activeTab === 'joint' ? 'flex-1 rounded-lg bg-primary-500/20 px-4 py-2 font-semibold text-white shadow-inner shadow-primary-500/20' : 'flex-1 rounded-lg px-4 py-2 text-slate-300 hover:bg-white/5 hover:text-white'}>
+                  Cuti Bersama
+                </button>
+              </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="joint-leave-date">Tambah Cuti Bersama</Label>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Input
-                        id="joint-leave-date"
-                        type="date"
-                        value={jointLeaveInput}
-                        onChange={(event) => setJointLeaveInput(event.target.value)}
-                        className="sm:flex-1"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddJointLeave}
-                        disabled={!jointLeaveInput || updateMutation.isLoading}
-                        variant="secondary"
-                      >
-                        Tambah
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Label>Daftar Cuti Bersama</Label>
-                    <ul className="space-y-2">
-                      {jointLeaves.length === 0 ? (
-                        <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">
-                          Belum ada tanggal yang terdaftar.
+              {activeTab === 'holidays' ? (
+                <div className="space-y-3">
+                  <Label>Daftar Hari Libur</Label>
+                  <ul className="space-y-2">
+                    {holidays.length === 0 ? (
+                      <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">Belum ada tanggal yang terdaftar.</li>
+                    ) : (
+                      holidays.map((date) => (
+                        <li key={date} className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm">
+                          <span className="font-medium text-slate-100">{date}</span>
+                          <Button type="button" variant="danger" outline size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => handleRemoveHoliday(date)} aria-label="Hapus">
+                            <Trash size={16} />
+                          </Button>
                         </li>
-                      ) : (
-                        jointLeaves.map((date) => (
-                          <li
-                            key={date}
-                            className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm"
-                          >
-                            <span className="font-medium text-slate-100">{date}</span>
-                            <Button
-                              type="button"
-                              variant="danger"
-                              outline
-                              size="sm"
-                              onClick={() => handleRemoveJointLeave(date)}
-                            >
-                              Hapus
-                            </Button>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
+                      ))
+                    )}
+                  </ul>
                 </div>
-              </section>
+              ) : (
+                <div className="space-y-3">
+                  <Label>Daftar Cuti Bersama</Label>
+                  <ul className="space-y-2">
+                    {jointLeaves.length === 0 ? (
+                      <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">Belum ada tanggal yang terdaftar.</li>
+                    ) : (
+                      jointLeaves.map((date) => (
+                        <li key={date} className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm">
+                          <span className="font-medium text-slate-100">{date}</span>
+                          <Button type="button" variant="danger" outline size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => handleRemoveJointLeave(date)} aria-label="Hapus">
+                            <Trash size={16} />
+                          </Button>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {formError ? <p className="text-sm text-rose-300">{formError}</p> : null}
-                {updateMutation.error ? (
-                  <p className="text-sm text-rose-300">{updateMutation.error.message}</p>
-                ) : null}
-                {updateMutation.isSuccess && !isDirty ? (
-                  <p className="text-sm text-emerald-300">Kalender berhasil diperbarui.</p>
-                ) : null}
+                {updateMutation.error ? <p className="text-sm text-rose-300">{updateMutation.error.message}</p> : null}
+                {updateMutation.isSuccess && !isDirty ? <p className="text-sm text-emerald-300">Kalender berhasil diperbarui.</p> : null}
                 <div className="flex flex-wrap gap-3">
-                  <Button type="submit" disabled={!isDirty || updateMutation.isLoading}>
-                    {updateMutation.isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleReset}
-                    disabled={!isDirty || updateMutation.isLoading}
-                  >
-                    Reset
-                  </Button>
+                  <Button type="submit" disabled={!isDirty || updateMutation.isLoading}>{updateMutation.isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}</Button>
+                  <Button type="button" variant="secondary" onClick={handleReset} disabled={!isDirty || updateMutation.isLoading}>Reset</Button>
                 </div>
               </div>
             </form>
           )}
         </Card>
+
+        <Modal open={addOpen} onClose={() => setAddOpen(false)} title={activeTab === 'holidays' ? 'Tambah Hari Libur' : 'Tambah Cuti Bersama'}>
+          <div className="space-y-4">
+            <Label htmlFor="date-input">Tanggal</Label>
+            <Input
+              id="date-input"
+              type="date"
+              value={activeTab === 'holidays' ? holidayInput : jointLeaveInput}
+              onChange={(e) => (activeTab === 'holidays' ? setHolidayInput(e.target.value) : setJointLeaveInput(e.target.value))}
+            />
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={() => {
+                  if (activeTab === 'holidays') {
+                    handleAddHoliday();
+                  } else {
+                    handleAddJointLeave();
+                  }
+                  // Close when input cleared by handler
+                  const ok = activeTab === 'holidays' ? !holidayInput : !jointLeaveInput;
+                  if (ok) setAddOpen(false);
+                }}
+                disabled={(activeTab === 'holidays' ? !holidayInput : !jointLeaveInput) || updateMutation.isLoading}
+              >
+                Tambah
+              </Button>
+              <Button type="button" variant="danger" outline onClick={() => setAddOpen(false)}>Batal</Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </AdminLayout>
   );

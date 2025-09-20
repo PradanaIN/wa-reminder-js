@@ -137,6 +137,18 @@ Hasil build frontend berada di `frontend/dist/`. Sajikan folder ini melalui CDN 
   - `POST /api/admin/bot/start` dan `POST /api/admin/bot/stop`
   - Endpoint lama `/api/system/*`, `/api/bot/*` tetap tersedia (dengan API key bila diperlukan).
 
+### Pemindaian QR WhatsApp
+
+Saat pertama kali menjalankan bot, Anda perlu memindai QR WhatsApp.
+
+- Lihat QR di terminal: backend sudah mencetak QR ASCII jika berjalan di terminal yang ter-attach.
+- Lihat QR di browser:
+  - JSON: `GET /api/system/qr` mengembalikan string QR (atau `null`).
+  - Gambar: `GET /api/system/qr.svg` menampilkan QR sebagai SVG (mudah di-embed).
+  - Halaman siap pakai: buka `http://localhost:3001/qr.html` untuk menampilkan QR dengan refresh otomatis setiap 15 detik.
+- Opsi headful (pop-up Chrome): set `PUPPETEER_HEADLESS=false` di environment backend agar jendela Chrome terbuka dan menampilkan QR langsung.
+- Persistensi sesi: sesi WhatsApp disimpan di `backend/storage/sessions/` (gunakan volume/mount di Docker agar tidak perlu scan ulang).
+
 ## Fitur Frontend
 
 - **Halaman publik** (`/`) menampilkan status bot, jadwal harian, dan pengiriman berikutnya.

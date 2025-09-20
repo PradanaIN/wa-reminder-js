@@ -26,3 +26,12 @@ export function useSystemStats() {
     }),
   };
 }
+
+export function useQr() {
+  return useQuery({
+    queryKey: ['system', 'qr'],
+    queryFn: () => apiRequest('/api/system/qr'),
+    // QR berubah cepat saat sesi baru; polling cepat saat belum aktif
+    refetchInterval: 3000,
+  });
+}

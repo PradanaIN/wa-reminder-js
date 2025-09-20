@@ -9,6 +9,7 @@ import AdminOverridesPage from './pages/AdminOverridesPage.jsx';
 import AdminContactsPage from './pages/AdminContactsPage.jsx';
 import { useSession } from './queries/auth.js';
 import { Spinner } from './components/ui/Spinner.jsx';
+import { ToastProvider } from './components/ui/ToastProvider.jsx';
 
 function ProtectedRoute({ children }) {
   const { data, error, isLoading } = useSession();
@@ -44,51 +45,53 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<PublicStatusPage />} />
-      <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute>
-            <AdminDashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/templates"
-        element={
-          <ProtectedRoute>
-            <AdminTemplatesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/contacts"
-        element={
-          <ProtectedRoute>
-            <AdminContactsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/overrides"
-        element={
-          <ProtectedRoute>
-            <AdminOverridesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/holidays"
-        element={
-          <ProtectedRoute>
-            <AdminHolidaysPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <ToastProvider>
+      <Routes>
+        <Route path="/" element={<PublicStatusPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/templates"
+          element={
+            <ProtectedRoute>
+              <AdminTemplatesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contacts"
+          element={
+            <ProtectedRoute>
+              <AdminContactsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/overrides"
+          element={
+            <ProtectedRoute>
+              <AdminOverridesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/holidays"
+          element={
+            <ProtectedRoute>
+              <AdminHolidaysPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </ToastProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const path = require("path");
+const fs = require("fs");
 const { runDailyJob } = require("../jobs/dailyJob");
 const { startScheduler, stopScheduler } = require("./schedulerController");
 const { stopHeartbeat } = require("../utils/heartbeat");
@@ -21,13 +22,34 @@ async function startBot() {
   }
 
   const puppeteerOptions = {
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless:
+      process.env.PUPPETEER_HEADLESS
+        ? process.env.PUPPETEER_HEADLESS === "true"
+        : true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-gpu",
+    ],
   };
 
   if (process.env.PUPPETEER_EXECUTABLE_PATH) {
     puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
   }
+  // Explicit persistent user data directory to avoid ephemeral profile conflicts
+  try {
+    puppeteerOptions.userDataDir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "storage",
+      "sessions",
+      "session"
+    );
+  } catch (_) {}
 
   client = new Client({
     authStrategy: new LocalAuth({
@@ -95,7 +117,25 @@ async function startBot() {
 
   try {
     addLog("[Sistem] 🔄 Inisialisasi WhatsApp client...");
-    await client.initialize();
+    try {
+      await client.initialize();
+    } catch (e) {
+      // Retry once after cleaning up potential Chromium profile lock files
+      try {
+        const sessionsBase = path.join(__dirname, "..", "..", "storage", "sessions");
+        const profileDir = path.join(sessionsBase, "session");
+        for (const f of [
+          path.join(profileDir, "SingletonLock"),
+          path.join(profileDir, "SingletonCookie"),
+          path.join(profileDir, "SingletonSocket"),
+          path.join(profileDir, "DevToolsActivePort"),
+        ]) {
+          try { fs.rmSync(f, { force: true }); } catch (_) {}
+        }
+        addLog("[Sistem] Deteksi kegagalan launch. Membersihkan lock dan mencoba lagi...");
+      } catch (_) {}
+      await client.initialize();
+    }
     addLog("[Sistem] ✅ Bot aktif.");
   } catch (err) {
     addLog(`[Sistem] ❌ Gagal inisialisasi client: ${err.message}`);

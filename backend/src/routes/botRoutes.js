@@ -5,10 +5,12 @@ const {
   stopBot,
   isBotActive,
 } = require("../controllers/botController");
+const { cleanupWwebjsProfileLocks } = require("../utils/chromeProfile");
 
 // Menyalakan bot
 router.post("/start", async (req, res, next) => {
   try {
+    try { cleanupWwebjsProfileLocks(); } catch (_) {}
     await startBot();
     res.json({ success: true, message: "Bot berhasil diaktifkan." });
   } catch (err) {

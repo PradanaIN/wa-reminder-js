@@ -49,31 +49,10 @@ export function PublicLayout({ children }) {
 
       {/* Footer */}
       <footer className="border-t border-white/5 bg-slate-950/80 pb-6 pt-10 text-sm text-slate-400 backdrop-blur-md">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 text-center sm:grid-cols-3 sm:items-center sm:text-left">
-          <div className="order-1 sm:order-1">
-            <p>&copy; 2025 BPS Kabupaten Bulungan</p>
-          </div>
-          <div className="order-3 sm:order-2">
-            <p className="text-slate-300">
-              Made with &#x2764;&#xfe0f; & &#x2615;
-            </p>
-          </div>
-          <div className="order-2 flex justify-center gap-4 sm:order-3 sm:justify-end">
-            <a
-              href="mailto:support@example.com"
-              className="hover:text-slate-200 transition-colors"
-            >
-              Dukungan
-            </a>
-            <a
-              href="https://github.com/PradanaIN/wa-reminder-js"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-200 transition-colors"
-            >
-              Dokumentasi
-            </a>
-          </div>
+        <div className="mx-auto max-w-7xl px-4 text-center">
+          <p className="text-center">
+            &copy; 2025 Badan Pusat Statistik Kabupaten Bulungan
+          </p>
         </div>
       </footer>
     </div>

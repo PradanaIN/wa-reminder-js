@@ -1,50 +1,34 @@
 import clsx from "clsx";
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-60";
 
 // Variant styles (fill)
 const variants = {
-<<<<<<< HEAD
-  primary: "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-400 focus-visible:ring-primary-500",
-  secondary: "bg-slate-800 text-slate-100 shadow-inner shadow-slate-900/40 hover:bg-slate-700 focus-visible:ring-slate-500",
-  ghost: "bg-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500",
-  danger: "bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-400 focus-visible:ring-rose-500",
-  success: "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 focus-visible:ring-emerald-500",
-=======
   primary:
-    'bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-400 focus-visible:ring-primary-500',
+    'bg-primary-600 text-white shadow-lg shadow-primary-600/40 hover:bg-primary-500 focus-visible:ring-primary-600',
   secondary:
     'bg-slate-800 text-slate-100 shadow-inner shadow-slate-900/40 hover:bg-slate-700 focus-visible:ring-slate-500',
   ghost:
     'bg-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500',
   danger:
-    'bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-400 focus-visible:ring-rose-500',
+    'bg-rose-600 text-white shadow-lg shadow-rose-600/40 hover:bg-rose-500 focus-visible:ring-rose-600',
   success:
-    'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 focus-visible:ring-emerald-500',
->>>>>>> 39fee1ae8834b9e8458174dc9340aed9f4167f2e
+    'bg-emerald-600 text-white shadow-lg shadow-emerald-600/40 hover:bg-emerald-500 focus-visible:ring-emerald-600',
 };
 
 // Variant styles (outline)
 const outlines = {
-<<<<<<< HEAD
-  primary: "border border-primary-500/50 text-primary-200 hover:bg-primary-500/10 focus-visible:ring-primary-500",
-  secondary: "border border-slate-600 text-slate-200 hover:bg-slate-700/40 focus-visible:ring-slate-500",
-  ghost: "border border-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500",
-  danger: "border border-rose-500/40 text-rose-200 hover:bg-rose-500/10 focus-visible:ring-rose-500",
-  success: "border border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/10 focus-visible:ring-emerald-500",
-=======
   primary:
-    'border border-primary-500/50 text-primary-200 hover:bg-primary-500/10 focus-visible:ring-primary-500',
+    'border border-primary-600/50 text-primary-200 hover:bg-primary-600/10 focus-visible:ring-primary-600',
   secondary:
     'border border-slate-600 text-slate-200 hover:bg-slate-700/40 focus-visible:ring-slate-500',
   ghost:
     'border border-transparent text-slate-100 hover:bg-slate-800/60 focus-visible:ring-slate-500',
   danger:
-    'border border-rose-500/40 text-rose-200 hover:bg-rose-500/10 focus-visible:ring-rose-500',
+    'border border-rose-600/50 text-rose-200 hover:bg-rose-600/10 focus-visible:ring-rose-600',
   success:
-    'border border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/10 focus-visible:ring-emerald-500',
->>>>>>> 39fee1ae8834b9e8458174dc9340aed9f4167f2e
+    'border border-emerald-600/50 text-emerald-200 hover:bg-emerald-600/10 focus-visible:ring-emerald-600',
 };
 
 // Sizes

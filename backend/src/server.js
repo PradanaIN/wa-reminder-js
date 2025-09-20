@@ -16,6 +16,13 @@ const { addLog } = require('./controllers/logController');
 const { isBotActive, getClient } = require('./controllers/botController');
 const { startScheduler, stopScheduler } = require('./controllers/schedulerController');
 const { stopHeartbeat } = require('./utils/heartbeat');
+const { cleanupWwebjsProfileLocks } = require('./utils/chromeProfile');
+
+// Proactively clean Chromium profile locks on startup (safe if none exist)
+try {
+  const removed = cleanupWwebjsProfileLocks();
+  if (removed) addLog('[Sistem] Membersihkan lock Chromium lama saat startup.');
+} catch (_) {}
 
 const app = createApp();
 const server = http.createServer(app);

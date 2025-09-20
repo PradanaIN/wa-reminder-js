@@ -85,22 +85,26 @@ export function ContactTable({
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <Button
-                        variant="ghost"
+                        variant="secondary"
+                        outline
                         size="sm"
-                        className="inline-flex items-center gap-1 text-xs text-sky-200 hover:text-sky-100"
+                        className="h-8 w-8 rounded-lg p-0 text-sky-200 hover:text-sky-100"
                         onClick={() => onEdit?.(contact)}
+                        aria-label="Edit"
+                        title="Edit"
                       >
-                        <Pencil size={14} />
-                        <span className="hidden sm:inline">Edit</span>
+                        <Pencil size={16} />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="danger"
+                        outline
                         size="sm"
-                        className="inline-flex items-center gap-1 text-xs text-rose-300 hover:text-rose-200"
+                        className="h-8 w-8 rounded-lg p-0 text-rose-300 hover:text-rose-200"
                         onClick={() => onDelete?.(contact)}
+                        aria-label="Hapus"
+                        title="Hapus"
                       >
-                        <Trash2 size={14} />
-                        <span className="hidden sm:inline">Hapus</span>
+                        <Trash2 size={16} />
                       </Button>
                     </div>
                   </td>

@@ -8,6 +8,7 @@ const { parseLogFilePerDay } = require('../utils/statParser');
 const { TIMEZONE } = require('../utils/calendar');
 
 const router = express.Router();
+let QRCodeLib = null; // lazy-load to avoid requiring if not used
 
 router.get('/health', (req, res) => {
   res.json({
@@ -30,6 +31,35 @@ router.get('/bot/status', (req, res) => {
 router.get('/qr', (req, res) => {
   const qr = getQR();
   res.json({ qr });
+});
+
+// Serve QR as an image (SVG) so it can be embedded easily in UIs/browsers
+router.get('/qr.svg', async (req, res, next) => {
+  try {
+    const qr = getQR();
+    if (!qr) {
+      return res.status(404).send('QR belum tersedia. Pastikan bot sedang menunggu pemindaian.');
+    }
+
+    if (!QRCodeLib) {
+      // Lazy require to keep startup fast and avoid hard failure when dependency missing
+      // (User should run npm install after adding dependency)
+      // eslint-disable-next-line global-require
+      QRCodeLib = require('qrcode');
+    }
+
+    const svg = await QRCodeLib.toString(qr, {
+      type: 'svg',
+      margin: 1,
+      width: 280,
+      errorCorrectionLevel: 'M',
+    });
+
+    res.setHeader('Content-Type', 'image/svg+xml');
+    return res.send(svg);
+  } catch (error) {
+    return next(error);
+  }
 });
 
 router.get('/keepalive', (req, res) => {
