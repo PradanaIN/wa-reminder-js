@@ -15,10 +15,16 @@ export default function AdminTemplatesPage() {
   const { data, isLoading } = useTemplate();
   const updateMutation = useUpdateTemplate();
 
+  const NAME_PLACEHOLDER = '{name}';
+  const QUOTE_PLACEHOLDER = '{quote}';
+
   const [template, setTemplate] = useState('');
   const [filterName, setFilterName] = useState('');
   const preview = useMemo(
-    () => template.replaceAll('{name}', filterName || 'Nama').replaceAll('{quote}', 'Kutipan hari ini'),
+    () =>
+      template
+        .replaceAll(NAME_PLACEHOLDER, filterName || 'Nama')
+        .replaceAll(QUOTE_PLACEHOLDER, 'Kutipan hari ini'),
     [template, filterName]
   );
 
@@ -44,7 +50,8 @@ export default function AdminTemplatesPage() {
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold text-white">Pengaturan Template Pesan</h1>
             <p className="text-sm text-slate-400">
-              Gunakan placeholder <code>{'{name}'}</code> dan <code>{'{quote}'}</code> untuk menyisipkan nama dan kutipan.
+              Gunakan placeholder <code>{NAME_PLACEHOLDER}</code> dan <code>{QUOTE_PLACEHOLDER}</code> untuk menyisipkan nama
+              dan kutipan.
             </p>
           </div>
 
