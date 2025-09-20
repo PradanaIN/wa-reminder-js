@@ -33,7 +33,7 @@ router.get('/qr', (req, res) => {
 });
 
 router.get('/keepalive', (req, res) => {
-  const now = moment().toISOString();
+  const now = moment().tz(TIMEZONE).toISOString();
   addLog(`[KeepAlive] Ping diterima pada ${now}`);
   res.json({ status: 'alive', timestamp: now });
 });
