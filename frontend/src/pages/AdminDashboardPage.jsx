@@ -2,18 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useLogout } from "../queries/auth";
 import {
-  useAddOverride,
   useAdminNextRun,
   useAdminSchedule,
-  useRemoveOverride,
   useUpdateSchedule,
 } from "../queries/schedule";
-import { useTemplate, useSaveTemplate } from "../queries/templates";
 import { BotControlPanel } from "../components/BotControlPanel";
 import { LogsPanel } from "../components/LogsPanel";
 import { NextRunCard } from "../components/NextRunCard";
 import { ScheduleGrid } from "../components/ScheduleGrid";
-import { OverrideTable } from "../components/OverrideTable";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -44,34 +40,20 @@ export default function AdminDashboardPage() {
     isFetching: scheduleFetching,
   } = useAdminSchedule();
   const { data: nextRun, isLoading: nextRunLoading } = useAdminNextRun();
-  const {
-    data: template,
-    isLoading: templateLoading,
-    isFetching: templateFetching,
-    error: templateError,
-  } = useTemplate();
 
   const updateScheduleMutation = useUpdateSchedule();
-  const addOverrideMutation = useAddOverride();
-  const removeOverrideMutation = useRemoveOverride();
-  const saveTemplateMutation = useSaveTemplate();
 
   const schedule = scheduleResponse?.schedule;
 
   const isSchedulePending = scheduleLoading && !schedule;
   const isScheduleUpdating = scheduleFetching && !scheduleLoading;
-  const isTemplatePending = templateLoading && template === undefined;
-  const isTemplateUpdating = templateFetching && !templateLoading;
 
   const [dailyTimes, setDailyTimes] = useState(DEFAULT_TIMES);
   const [timezone, setTimezone] = useState("Asia/Makassar");
   const [paused, setPaused] = useState(false);
-  const [overrideForm, setOverrideForm] = useState({
-    date: "",
-    time: "",
-    note: "",
-  });
-  const [templateDraft, setTemplateDraft] = useState("");
+
+  // Tabs for content card
+  const [panelTab, setPanelTab] = useState("logs"); // logs | schedule | next
 
   useEffect(() => {
     if (schedule) {
@@ -80,12 +62,6 @@ export default function AdminDashboardPage() {
       setPaused(Boolean(schedule.paused));
     }
   }, [schedule]);
-
-  useEffect(() => {
-    if (typeof template === "string") {
-      setTemplateDraft(template);
-    }
-  }, [template]);
 
   useEffect(() => {
     if (!sessionLoading && !session?.authenticated) {
@@ -100,39 +76,6 @@ export default function AdminDashboardPage() {
     );
     updateScheduleMutation.mutate({ dailyTimes: normalized, timezone, paused });
   };
-
-  const handleOverrideSubmit = (event) => {
-    event.preventDefault();
-    addOverrideMutation.mutate(overrideForm, {
-      onSuccess: () => setOverrideForm({ date: "", time: "", note: "" }),
-    });
-  };
-
-  const handleTemplateSubmit = (event) => {
-    event.preventDefault();
-    saveTemplateMutation.mutate(templateDraft);
-  };
-
-  const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => navigate("/admin/login", { replace: true }),
-    });
-  };
-
-  const overrideButtonDisabled = useMemo(() => {
-    return (
-      !overrideForm.date.trim() ||
-      !overrideForm.time.trim() ||
-      addOverrideMutation.isLoading
-    );
-  }, [overrideForm.date, overrideForm.time, addOverrideMutation.isLoading]);
-
-  const isTemplateDirty = useMemo(() => {
-    if (typeof template !== "string") {
-      return false;
-    }
-    return templateDraft !== template;
-  }, [templateDraft, template]);
 
   const metrics = useMemo(
     () => [
@@ -168,15 +111,32 @@ export default function AdminDashboardPage() {
     [schedule]
   );
 
+  // Sticky action bar (shows only on schedule tab when dirty)
+  const scheduleDirty = useMemo(() => {
+    const normalized = Object.fromEntries(
+      Object.entries(dailyTimes).map(([d, v]) => [d, v || null])
+    );
+    const server = Object.fromEntries(
+      Object.entries({ ...DEFAULT_TIMES, ...(schedule?.dailyTimes || {}) }).map(
+        ([d, v]) => [d, v || null]
+      )
+    );
+    return (
+      JSON.stringify(normalized) !== JSON.stringify(server) ||
+      timezone !== (schedule?.timezone || "Asia/Makassar") ||
+      Boolean(paused) !== Boolean(schedule?.paused)
+    );
+  }, [dailyTimes, timezone, paused, schedule?.dailyTimes, schedule?.timezone, schedule?.paused]);
+
   return (
     <AdminLayout
       username={session?.user?.username}
-      onLogout={handleLogout}
+      onLogout={() => logoutMutation.mutate(undefined, { onSuccess: () => navigate("/admin/login", { replace: true }) })}
       isLoggingOut={logoutMutation.isLoading}
       loading={sessionLoading}
     >
       <div className="space-y-12">
-        {/* Ringkasan Harian */}
+        {/* Ringkasan Harian + Kontrol Bot */}
         <section className="grid gap-8 lg:grid-cols-[2fr,1fr]">
           <Card className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/80 p-8 shadow-xl backdrop-blur-md">
             <div className="absolute inset-y-0 right-[-40%] -z-10 hidden w-3/4 bg-gradient-to-l from-primary-500/20 to-transparent blur-3xl lg:block" />
@@ -185,12 +145,11 @@ export default function AdminDashboardPage() {
                 <Badge variant="info" className="w-fit uppercase tracking-wide">
                   Ringkasan Harian
                 </Badge>
-                <h1 className="text-4xl font-bold text-slate-50">
-                  Halo, {session?.user?.username || "Admin"} 👋
+                <h1 className="text-4xl font-bold text-white">
+                  Halo, {session?.user?.username || "Admin"}!
                 </h1>
                 <p className="max-w-xl text-base text-slate-400">
-                  Pantau performa bot dan jadwal pengiriman. Gunakan panel di
-                  bawah untuk mengatur jadwal default, menambahkan override, dan
+                  Pantau performa bot dan jadwal pengiriman. Gunakan panel di bawah untuk mengatur jadwal default dan
                   memantau log aktivitas terkini.
                 </p>
                 {isScheduleUpdating && (
@@ -217,281 +176,81 @@ export default function AdminDashboardPage() {
           <BotControlPanel />
         </section>
 
-        {/* Pengaturan Jadwal */}
-        <section className="grid gap-8 lg:grid-cols-[2fr,1fr]">
-          <Card className="space-y-8 rounded-2xl bg-slate-900/80 p-8 shadow-lg backdrop-blur-md">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-white">
-                Pengaturan Jadwal Otomatis
-              </h2>
-              <p className="text-sm text-slate-400">
-                Sesuaikan jam pengiriman untuk setiap hari serta zona waktu yang
-                digunakan sistem.
-              </p>
-            </div>
-            <form className="space-y-8" onSubmit={handleScheduleSubmit}>
-              <ScheduleGrid
-                values={dailyTimes}
-                onChange={setDailyTimes}
-                loading={isSchedulePending}
-              />
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="timezone" className="text-slate-300">
-                    Zona waktu
-                  </Label>
-                  <Input
-                    id="timezone"
-                    value={timezone}
-                    onChange={(event) => setTimezone(event.target.value)}
-                    required
-                    className="rounded-lg border-slate-700 bg-slate-900/50 focus:border-primary-500 focus:ring focus:ring-primary-500/30"
-                  />
-                  <p className="text-xs text-slate-500">
-                    Gunakan format seperti <code>Asia/Makassar</code> atau{" "}
-                    <code>Asia/Jakarta</code>.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Status penjadwalan</Label>
-                  <div className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/50 p-3 hover:bg-slate-800/50">
-                    <input
-                      id="paused"
-                      type="checkbox"
-                      className="h-5 w-5 accent-primary-500"
-                      checked={paused}
-                      onChange={(event) => setPaused(event.target.checked)}
-                    />
-                    <Label
-                      htmlFor="paused"
-                      className="text-sm text-slate-300 cursor-pointer"
-                    >
-                      Jeda pengiriman otomatis (override manual tetap berjalan)
-                    </Label>
-                  </div>
-                </div>
-              </div>
-
-              {updateScheduleMutation.error && (
-                <p className="text-sm text-rose-300">
-                  {updateScheduleMutation.error.message}
-                </p>
-              )}
-
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  type="submit"
-                  disabled={
-                    isSchedulePending || updateScheduleMutation.isLoading
-                  }
-                  className="transition hover:scale-105 hover:shadow-lg"
-                >
-                  {updateScheduleMutation.isLoading
-                    ? "Menyimpan..."
-                    : "Simpan Jadwal"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={!schedule || isSchedulePending}
-                  onClick={() =>
-                    setDailyTimes({
-                      ...DEFAULT_TIMES,
-                      ...(schedule?.dailyTimes ?? {}),
-                    })
-                  }
-                >
-                  Reset perubahan
-                </Button>
-              </div>
-            </form>
-          </Card>
-          <NextRunCard nextRun={nextRun} loading={nextRunLoading} />
-        </section>
-
-        {/* Template Pesan */}
+        {/* Content Tabs: Log | Jadwal | Berikutnya */}
         <section>
-          <Card className="space-y-8 rounded-2xl bg-slate-900/80 p-8 shadow-lg backdrop-blur-md">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-white">
-                  Template Pesan
-                </h2>
-                <p className="text-sm text-slate-400">
-                  Edit isi pesan yang akan dikirim bot. Gunakan placeholder{" "}
-                  <code>{"{name}"}</code> untuk nama kontak dan{" "}
-                  <code>{"{quote}"}</code> untuk kutipan harian.
-                </p>
-              </div>
-              {isTemplateUpdating && (
-                <div className="flex items-center gap-2 text-xs font-medium text-primary-200 animate-pulse">
-                  <Spinner size="sm" />
-                  <span>Mengambil versi terbaru...</span>
+          <Card className="space-y-6 border-white/10 bg-slate-900/70 p-0">
+            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <button onClick={() => setPanelTab("logs")} className={panelTab === "logs" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Log</button>
+              <button onClick={() => setPanelTab("schedule")} className={panelTab === "schedule" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Jadwal</button>
+              <button onClick={() => setPanelTab("next")} className={panelTab === "next" ? "rounded px-3 py-1 text-white" : "rounded px-3 py-1 hover:text-white"}>Berikutnya</button>
+            </div>
+
+            <div className="p-6">
+              {panelTab === "logs" && (
+                <div className="sm:max-h-none max-h-[480px]">
+                  <LogsPanel />
                 </div>
               )}
-            </div>
-            {templateError && (
-              <p className="text-sm text-rose-300">{templateError.message}</p>
-            )}
 
-            <form className="space-y-4" onSubmit={handleTemplateSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="template-editor" className="text-slate-300">
-                  Konten template
-                </Label>
-                <textarea
-                  id="template-editor"
-                  className="min-h-[220px] w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-sm text-slate-100 shadow-inner focus:border-primary-500 focus:ring focus:ring-primary-500/30 transition disabled:cursor-not-allowed disabled:opacity-60"
-                  value={templateDraft}
-                  onChange={(event) => setTemplateDraft(event.target.value)}
-                  disabled={isTemplatePending || saveTemplateMutation.isLoading}
-                />
-                <p className="text-xs text-slate-500">
-                  Placeholder akan otomatis diganti ketika pesan dikirim.
-                  Pastikan kedua placeholder tetap tersedia.
-                </p>
-              </div>
+              {panelTab === "schedule" && (
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-2">
+                    <h2 className="text-xl font-semibold text-white">Pengaturan Jadwal Otomatis</h2>
+                    <p className="text-sm text-slate-400">Sesuaikan jam pengiriman untuk setiap hari serta zona waktu yang digunakan sistem.</p>
+                  </div>
 
-              {saveTemplateMutation.error && (
-                <p className="text-sm text-rose-300">
-                  {saveTemplateMutation.error.message}
-                </p>
+                  <form className="space-y-6" onSubmit={handleScheduleSubmit}>
+                    <ScheduleGrid values={dailyTimes} onChange={setDailyTimes} />
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="timezone">Zona waktu</Label>
+                        <Input id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} required />
+                        <p className="text-xs text-slate-500">Gunakan format seperti <code>Asia/Makassar</code> atau <code>Asia/Jakarta</code>.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Status penjadwalan</Label>
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/70 p-3">
+                          <input id="paused" type="checkbox" className="h-4 w-4 accent-primary-500" checked={paused} onChange={(e) => setPaused(e.target.checked)} />
+                          <label htmlFor="paused" className="text-sm text-slate-300">Jeda pengiriman otomatis (override manual tetap berjalan)</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {updateScheduleMutation.error && (
+                      <p className="text-sm text-rose-300">{updateScheduleMutation.error.message}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button type="submit" disabled={updateScheduleMutation.isLoading}>
+                        {updateScheduleMutation.isLoading ? "Menyimpan..." : "Simpan Jadwal"}
+                      </Button>
+                      <Button type="button" variant="ghost" onClick={() => schedule && setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) })}>
+                        Reset perubahan
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               )}
 
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  type="submit"
-                  disabled={
-                    !isTemplateDirty ||
-                    isTemplatePending ||
-                    saveTemplateMutation.isLoading
-                  }
-                  className="transition hover:scale-105 hover:shadow-lg"
-                >
-                  {saveTemplateMutation.isLoading
-                    ? "Menyimpan..."
-                    : "Simpan Template"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() =>
-                    setTemplateDraft(
-                      typeof template === "string" ? template : ""
-                    )
-                  }
-                  disabled={
-                    !isTemplateDirty ||
-                    isTemplatePending ||
-                    saveTemplateMutation.isLoading
-                  }
-                >
-                  Reset perubahan
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </section>
-
-        {/* Override Manual */}
-        <section className="grid gap-8 lg:grid-cols-[1.5fr,1fr]">
-          <Card className="space-y-8 rounded-2xl bg-slate-900/80 p-8 shadow-lg backdrop-blur-md">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-semibold text-white">
-                Override Manual
-              </h2>
-              <p className="text-sm text-slate-400">
-                Tambahkan jadwal khusus untuk menggantikan jadwal otomatis pada
-                tanggal tertentu.
-              </p>
+              {panelTab === "next" && (
+                <NextRunCard nextRun={nextRun} loading={nextRunLoading} />
+              )}
             </div>
-            <form
-              className="grid gap-4 md:grid-cols-4"
-              onSubmit={handleOverrideSubmit}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="override-date" className="text-slate-300">
-                  Tanggal
-                </Label>
-                <Input
-                  id="override-date"
-                  type="date"
-                  value={overrideForm.date}
-                  onChange={(event) =>
-                    setOverrideForm((prev) => ({
-                      ...prev,
-                      date: event.target.value,
-                    }))
-                  }
-                  required
-                  className="rounded-lg border-slate-700 bg-slate-900/50 focus:border-primary-500 focus:ring focus:ring-primary-500/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="override-time" className="text-slate-300">
-                  Waktu
-                </Label>
-                <Input
-                  id="override-time"
-                  type="time"
-                  value={overrideForm.time}
-                  onChange={(event) =>
-                    setOverrideForm((prev) => ({
-                      ...prev,
-                      time: event.target.value,
-                    }))
-                  }
-                  required
-                  className="rounded-lg border-slate-700 bg-slate-900/50 focus:border-primary-500 focus:ring focus:ring-primary-500/30"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="override-note" className="text-slate-300">
-                  Catatan (opsional)
-                </Label>
-                <Input
-                  id="override-note"
-                  placeholder="Misal: Rapat koordinasi"
-                  value={overrideForm.note}
-                  onChange={(event) =>
-                    setOverrideForm((prev) => ({
-                      ...prev,
-                      note: event.target.value,
-                    }))
-                  }
-                  className="rounded-lg border-slate-700 bg-slate-900/50 focus:border-primary-500 focus:ring focus:ring-primary-500/30"
-                />
-              </div>
-              <div className="md:col-span-4">
-                {addOverrideMutation.error && (
-                  <p className="pb-2 text-sm text-rose-300">
-                    {addOverrideMutation.error.message}
-                  </p>
-                )}
-                <Button
-                  type="submit"
-                  disabled={overrideButtonDisabled}
-                  className="transition hover:scale-105 hover:shadow-lg"
-                >
-                  {addOverrideMutation.isLoading
-                    ? "Menambahkan..."
-                    : "Tambah Override"}
-                </Button>
-              </div>
-            </form>
-
-            <OverrideTable
-              overrides={schedule?.manualOverrides}
-              onRemove={(date) => removeOverrideMutation.mutate(date)}
-            />
-            {removeOverrideMutation.error && (
-              <p className="text-sm text-rose-300">
-                {removeOverrideMutation.error.message}
-              </p>
-            )}
           </Card>
-          <LogsPanel />
+
+          {/* Sticky Action Bar for schedule */}
+          {panelTab === "schedule" && scheduleDirty && (
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-slate-950/80 backdrop-blur">
+              <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+                <p className="text-xs text-slate-300">Perubahan belum disimpan</p>
+                <div className="flex gap-3">
+                  <Button type="button" variant="ghost" onClick={() => schedule && (setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) }), setTimezone(schedule.timezone || "Asia/Makassar"), setPaused(Boolean(schedule.paused)))}>Reset</Button>
+                  <Button onClick={handleScheduleSubmit}>Simpan</Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </AdminLayout>

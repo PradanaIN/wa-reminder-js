@@ -16,8 +16,10 @@ async function apiRequest(path, options = {}) {
   const config = {
     method: options.method || 'GET',
     credentials: 'include',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
       ...options.headers,
     },
   };

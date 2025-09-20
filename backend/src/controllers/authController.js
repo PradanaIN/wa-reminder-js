@@ -59,6 +59,10 @@ async function handleLogin(req, res, next) {
 
     await establishSession(req, username);
 
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     res.json({
       message: 'Login berhasil.',
       user: { username, role: 'admin' },
@@ -69,15 +73,18 @@ async function handleLogin(req, res, next) {
 }
 
 function handleSession(req, res) {
+  res.set('Cache-Control', 'no-store');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+
   if (req.session?.isAdmin) {
-    res.json({
+    return res.json({
       authenticated: true,
       user: { username: req.session.username, role: 'admin' },
     });
-    return;
   }
 
-  res.json({ authenticated: false });
+  return res.json({ authenticated: false });
 }
 
 async function handleLogout(req, res, next) {

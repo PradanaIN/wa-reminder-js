@@ -1,8 +1,8 @@
 import { Label } from "./ui/Label";
+import { Clock } from "./ui/icons";
 import { Input } from "./ui/Input";
 import { Skeleton } from "./ui/Skeleton";
 import { DataPlaceholder } from "./ui/DataPlaceholder";
-import { Clock } from "lucide-react";
 
 const dayLabels = {
   1: "Senin",
@@ -66,7 +66,7 @@ export function ScheduleGrid({
 
             {readOnly ? (
               <p className="text-lg font-semibold text-white">
-                {value ? `${value} WIB` : "Tidak dijadwalkan"}
+                {value ? `${value} WIB` : (Number(day) >= 6 ? "Libur" : "Tidak dijadwalkan")}
               </p>
             ) : (
               <Input
@@ -94,3 +94,6 @@ export function ScheduleGrid({
     </div>
   );
 }
+
+
+

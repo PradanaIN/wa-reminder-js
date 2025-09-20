@@ -1,5 +1,5 @@
 import { usePublicNextRun, usePublicSchedule } from "../queries/schedule";
-import { useLogs, useSystemHealth, useSystemStats } from "../queries/system";
+import { useSystemHealth } from "../queries/system";
 import { ScheduleGrid } from "../components/ScheduleGrid";
 import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
@@ -9,45 +9,22 @@ import { DataPlaceholder } from "../components/ui/DataPlaceholder";
 import { StatusPill } from "../components/StatusPill";
 import { PublicLayout } from "../components/layout/PublicLayout";
 
-const DEFAULT_TIMES = {
-  1: "15:59",
-  2: "15:59",
-  3: "15:59",
-  4: "15:59",
-  5: "16:29",
-  6: null,
-  7: null,
-};
-
 export default function PublicStatusPage() {
   const { data: health, isLoading: healthLoading } = useSystemHealth();
   const { data: scheduleData, isLoading: scheduleLoading } =
     usePublicSchedule();
   const { data: nextRunData, isLoading: nextRunLoading } = usePublicNextRun();
-  const {
-    data: logsData,
-    isLoading: logsLoading,
-    isError: logsError,
-    error: logsErrorObj,
-  } = useLogs(50);
-  const { data: stats, isLoading: statsLoading } = useSystemStats();
 
   const schedule = scheduleData?.schedule;
-  const nextRun = nextRunData?.nextRun;
-  const days = ["1", "2", "3", "4", "5", "6", "7"];
-  const dailyTimes = days.reduce((acc, d) => {
-    const v =
-      (schedule?.dailyTimes && schedule.dailyTimes[d]) ?? DEFAULT_TIMES[d];
-    acc[d] = v || DEFAULT_TIMES[d];
-    return acc;
-  }, {});
+  const nextRun = nextRunData?.nextRun;`n`n  // Public activity & stats`n  const { data: logsData, isLoading: logsLoading, isError: logsError, error: logsErrorObj } = useLogs(50);`n  const { data: stats, isLoading: statsLoading } = useSystemStats();`n\n\n  // Public activity & stats\n  const { data: logsData, isLoading: logsLoading, isError: logsError, error: logsErrorObj } = useLogs(50);\n  const { data: stats, isLoading: statsLoading } = useSystemStats();
   const hasDailySchedule = Boolean(
-    dailyTimes && Object.values(dailyTimes).some((v) => v)
+    schedule?.dailyTimes && Object.values(schedule.dailyTimes).some(Boolean)
   );
 
   return (
     <PublicLayout>
       <section id="status" className="space-y-12">
+        {/* Status Bot */}
         <Card className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/80 px-6 py-10 shadow-xl backdrop-blur-md sm:px-10">
           <div className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 bg-gradient-to-l from-primary-500/20 to-transparent blur-3xl sm:block" />
           <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
@@ -56,13 +33,13 @@ export default function PublicStatusPage() {
                 Monitor status harian
               </Badge>
               <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
-                Sistem Informasi Pengingat Presensi (SIGAP)
+                Pantau kiriman pengingat WhatsApp tim Anda dalam satu halaman.
               </h1>
               <p className="text-base text-slate-400">
-                Sistem ini membantu Anda memantau pengingat WhatsApp Bot
-                presensi dalam satu halaman terpusat, memungkinkan pengaturan
-                jadwal pengiriman otomatis, penyesuaian jadwal manual, serta
-                pemantauan status koneksi bot.
+                Sistem ini mengatur jadwal pengiriman otomatis, override manual,
+                serta status koneksi bot. Nikmati transparansi penuh mengenai
+                kapan pesan terakhir dikirim dan kapan pengiriman berikutnya
+                akan dilakukan.
               </p>
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
                 {healthLoading ? (
@@ -70,13 +47,14 @@ export default function PublicStatusPage() {
                 ) : (
                   <StatusPill active={Boolean(health?.botActive)} />
                 )}
-                {!healthLoading && health?.timezone ? (
+                {!healthLoading && health?.timezone && (
                   <Badge variant="info" className="uppercase tracking-wide">
                     Zona waktu: {health.timezone}
                   </Badge>
-                ) : null}
+                )}
               </div>
             </div>
+            {/* Widget Kanan */}
             <div className="grid gap-3 rounded-2xl border border-white/10 bg-slate-950/70 p-6 text-sm text-slate-300">
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Status Bot</span>
@@ -118,158 +96,84 @@ export default function PublicStatusPage() {
                         {nextRun.timezone}
                       </p>
                     </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+                      <span className="rounded-full bg-primary-500/15 px-3 py-1 text-primary-200">
+                        {nextRun.override
+                          ? "Override manual"
+                          : "Jadwal default"}
+                      </span>
+                      {schedule?.timezone && (
+                        <span className="rounded-full bg-slate-800/70 px-3 py-1 text-slate-300">
+                          Zona waktu {schedule.timezone}
+                        </span>
+                      )}
+                    </div>
                     {nextRun.override ? (
                       <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 p-4 text-sm text-amber-100">
                         <p className="font-semibold">Override aktif</p>
                         <p>
                           {nextRun.override.date} pukul {nextRun.override.time}
                           {nextRun.override.note
-                            ? ` � ${nextRun.override.note}`
+                            ? " - " + nextRun.override.note
                             : ""}
                         </p>
                       </div>
                     ) : (
                       <p className="rounded-xl border border-white/10 bg-slate-950/80 p-4 text-sm text-slate-300">
-                        Pengiriman mengikuti jadwal default.
+                        Pengiriman akan mengikuti jadwal default harian.
                       </p>
                     )}
                   </div>
                 ) : (
                   <DataPlaceholder
-                    icon="??"
                     title="Belum ada jadwal berikutnya"
-                    description="Hubungi administrator untuk mengatur jadwal baru."
+                    description="Hubungi administrator untuk mengatur jadwal pengiriman yang baru."
+                    icon={null}
                   />
                 )}
               </div>
             </div>
           </div>
         </Card>
-      </section>
 
-      <section
-        id="public-activity"
-        className="mt-12 grid gap-8 lg:grid-cols-[2fr,1fr]"
-      >
-        <Card className="space-y-6 border-white/10 bg-slate-900/65">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold text-white">
-              Aktivitas Terbaru
-            </h2>
-            <p className="text-sm text-slate-400">
-              Log aktivitas terbaru yang dapat diakses publik.
-            </p>
-          </div>
-          {logsLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-40" />
-            </div>
-          ) : logsError ? (
-            <DataPlaceholder
-              icon="??"
-              title="Gagal memuat log"
-              description={logsErrorObj?.message || "Terjadi kesalahan."}
-            />
-          ) : logsData?.logs?.length ? (
-            <pre className="max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/70 p-4 text-xs text-slate-300">
-              {logsData.logs.join("\n")}
-            </pre>
-          ) : (
-            <DataPlaceholder
-              icon="??"
-              title="Belum ada log"
-              description="Aktivitas sistem akan tampil di sini."
-            />
-          )}
-        </Card>
-
-        <Card className="space-y-6 border-white/10 bg-slate-900/65">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold text-white">Statistik</h2>
-            <p className="text-sm text-slate-400">
-              Ringkasan pesan, error, dan uptime per hari.
-            </p>
-          </div>
-          {statsLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-28" />
-              <Skeleton className="h-24" />
-            </div>
-          ) : !stats ? (
-            <DataPlaceholder
-              icon="??"
-              title="Belum ada data"
-              description="Statistik belum tersedia."
-            />
-          ) : (
-            (() => {
-              const totalMessages = Object.values(
-                stats.messagesPerDay || {}
-              ).reduce((a, b) => a + b, 0);
-              const totalErrors = Object.values(
-                stats.errorsPerDay || {}
-              ).reduce((a, b) => a + b, 0);
-              const totalUptime = Object.values(
-                stats.uptimePerDay || {}
-              ).reduce((a, b) => a + b, 0);
-              const days = Object.keys({
-                ...(stats.messagesPerDay || {}),
-                ...(stats.errorsPerDay || {}),
-                ...(stats.uptimePerDay || {}),
-              }).slice(-7);
-              return (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="rounded-xl border border-white/10 bg-slate-950/70 p-3">
-                      <p className="text-xs text-slate-400">Pesan</p>
-                      <p className="text-xl font-semibold text-white">
-                        {totalMessages}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-slate-950/70 p-3">
-                      <p className="text-xs text-slate-400">Error</p>
-                      <p className="text-xl font-semibold text-white">
-                        {totalErrors}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-slate-950/70 p-3">
-                      <p className="text-xs text-slate-400">Uptime (jam)</p>
-                      <p className="text-xl font-semibold text-white">
-                        {totalUptime}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {days.map((d) => {
-                      const m = stats.messagesPerDay?.[d] || 0;
-                      const err = stats.errorsPerDay?.[d] || 0;
-                      const max = Math.max(1, m + err);
-                      return (
-                        <div key={d} className="space-y-1">
-                          <div className="flex items-center justify-between text-xs text-slate-400">
-                            <span>{d}</span>
-                            <span>
-                              {m} pesan, {e} error
-                            </span>
-                          </div>
-                          <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                            <div
-                              className="h-full bg-primary-500"
-                              style={{ width: `${(m / max) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()
-          )}
+        {/* CTA Card */}
+        <Card className="flex flex-col items-center gap-4 rounded-2xl bg-slate-900/80 py-10 text-center shadow-lg backdrop-blur-md">
+          <h2 className="text-2xl font-semibold text-white">
+            Ingin menyesuaikan jadwal?
+          </h2>
+          <p className="max-w-2xl text-sm text-slate-300">
+            Masuk sebagai admin untuk mengatur jadwal default per hari,
+            menambahkan override manual untuk tanggal tertentu, serta
+            menjalankan bot secara langsung.
+          </p>
+          <a
+            href="/admin/login"
+            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-primary-500/30 transition hover:scale-105 hover:bg-primary-400 hover:shadow-primary-400/40"
+          >
+            Buka dashboard admin
+          </a>
         </Card>
       </section>
+        <section id="public-activity" className="grid gap-8 lg:grid-cols-[2fr,1fr]">
+          <Card className="space-y-6 border-white/10 bg-slate-900/65">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-white">Aktivitas Terbaru</h2>
+              <p className="text-sm text-slate-400">Log aktivitas terbaru yang dapat diakses publik.</p>
+            </div>
+            { logsLoading ? (\n              <div className="space-y-3">\n                <Skeleton className="h-4 w-1/3" />\n                <Skeleton className="h-40" />\n              </div>\n            ) : logsError ? (\n              <DataPlaceholder icon="??" title="Gagal memuat log" description={logsErrorObj?.message || \"Terjadi kesalahan.\"} />\n            ) : logsData?.logs?.length ? (\n              <pre className="max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/70 p-4 text-xs text-slate-300">{logsData.logs.join("\\n")}</pre>\n            ) : (\n              <DataPlaceholder icon="??" title="Belum ada log" description="Aktivitas sistem akan tampil di sini." />\n            ) }
+          </Card>
 
+          <Card className="space-y-6 border-white/10 bg-slate-900/65">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-white">Statistik</h2>
+              <p className="text-sm text-slate-400">Ringkasan pesan terkirim, error, dan uptime per hari.</p>
+            </div>
+            { logsLoading ? (\n              <div className="space-y-3">\n                <Skeleton className="h-4 w-1/3" />\n                <Skeleton className="h-40" />\n              </div>\n            ) : logsError ? (\n              <DataPlaceholder icon="??" title="Gagal memuat log" description={logsErrorObj?.message || \"Terjadi kesalahan.\"} />\n            ) : logsData?.logs?.length ? (\n              <pre className="max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/70 p-4 text-xs text-slate-300">{logsData.logs.join("\\n")}</pre>\n            ) : (\n              <DataPlaceholder icon="??" title="Belum ada log" description="Aktivitas sistem akan tampil di sini." />\n            ) }
+          </Card>
+        </section>
+
+
+      {/* Jadwal Default */}
       <section id="schedule" className="mt-16 space-y-10">
         <Card className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/80 px-6 py-10 shadow-xl backdrop-blur-md sm:px-10">
           <div className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 bg-gradient-to-l from-primary-500/20 to-transparent blur-3xl sm:block" />
@@ -284,7 +188,9 @@ export default function PublicStatusPage() {
                 </h2>
                 <p className="text-base text-slate-400">
                   Jadwal ini menjadi acuan utama kapan bot mengirim pesan
-                  pengingat ke tim Anda.
+                  pengingat ke tim Anda. Override manual akan menggantikan
+                  jadwal di tanggal tertentu, tetapi akan kembali ke pola
+                  default setelahnya.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-300">
@@ -303,6 +209,11 @@ export default function PublicStatusPage() {
                   </span>
                 ) : null}
               </div>
+              <p className="text-sm text-slate-400">
+                Untuk mengubah jam pengiriman atau menambah override manual,
+                masuk ke dashboard admin dan atur jadwal sesuai kebutuhan
+                operasional Anda.
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -325,11 +236,11 @@ export default function PublicStatusPage() {
                       {schedule?.timezone ?? "yang ditentukan"}.
                     </p>
                   </div>
-                  <ScheduleGrid readOnly values={dailyTimes} />
+                  <ScheduleGrid readOnly values={schedule.dailyTimes} />
                   {schedule?.paused && (
                     <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
                       Penjadwalan otomatis sementara dijeda. Override manual
-                      tetap berjalan.
+                      tetap berjalan sesuai rencana.
                     </div>
                   )}
                 </div>
@@ -358,5 +269,10 @@ export default function PublicStatusPage() {
     </PublicLayout>
   );
 }
+
+
+
+
+
 
 

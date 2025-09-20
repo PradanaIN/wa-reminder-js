@@ -1,57 +1,41 @@
-import clsx from "clsx";
+import clsx from 'clsx';
 
-const toneStyles = {
-  slate: "bg-slate-900/70 border-white/10 text-slate-100 shadow-slate-900/30",
-  emerald:
-    "bg-emerald-500/15 border-emerald-400/30 text-emerald-100 shadow-emerald-900/20",
-  amber:
-    "bg-amber-500/15 border-amber-400/30 text-amber-100 shadow-amber-900/20",
-  sky: "bg-sky-500/15 border-sky-400/30 text-sky-100 shadow-sky-900/20",
-  rose: "bg-rose-500/15 border-rose-400/30 text-rose-100 shadow-rose-900/20",
-};
+function toneToKey(tone) {
+  if (tone === 'emerald') return 'success';
+  if (tone === 'amber') return 'warning';
+  if (tone === 'sky') return 'info';
+  if (tone === 'rose') return 'danger';
+  return 'neutral';
+}
 
-const sizes = {
-  sm: "px-4 py-3 text-sm",
-  md: "px-5 py-4 text-base",
-  lg: "px-6 py-5 text-lg",
-};
+export function MetricCard({ label, value, helper, tone = 'slate', loading = false }) {
+  const key = toneToKey(tone);
+  if (loading) {
+    return (
+      <div className={clsx('rounded-2xl border px-5 py-4 shadow-lg backdrop-blur-sm')}>
+        <div className="h-3 w-24 animate-pulse rounded-full bg-white/20" />
+        <div className="mt-4 h-6 w-28 animate-pulse rounded-full bg-white/30" />
+        <div className="mt-3 h-3 w-40 animate-pulse rounded-full bg-white/20" />
+      </div>
+    );
+  }
 
-export function MetricCard({
-  label,
-  value,
-  helper,
-  tone = "slate",
-  size = "md",
-  icon,
-  className,
-}) {
+  const style = {
+    backgroundColor: `var(--tone-${key}-bg)`,
+    color: `var(--tone-${key}-text)`,
+    borderColor: `var(--tone-${key}-border)`,
+  };
+
   return (
     <div
+      style={style}
       className={clsx(
-        "relative rounded-2xl border shadow-lg backdrop-blur-sm transition-transform hover:-translate-y-0.5 hover:shadow-xl",
-        toneStyles[tone] || toneStyles.slate,
-        sizes[size],
-        className
+        'rounded-2xl border px-5 py-4 shadow-lg backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-xl'
       )}
     >
-      {icon && (
-        <div className="absolute right-4 top-4 text-2xl opacity-60">{icon}</div>
-      )}
-
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
-        {label}
-      </p>
-
-      <p
-        className={clsx(
-          "mt-2 font-semibold text-white",
-          size === "lg" ? "text-3xl" : size === "sm" ? "text-xl" : "text-2xl"
-        )}
-      >
-        {value}
-      </p>
-
-      {helper && <p className="mt-2 text-xs text-white/70">{helper}</p>}
+      <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--tone-neutral-text, currentColor)' }}>{label}</p>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      {helper ? <p className="mt-2 text-xs" style={{ color: 'var(--text-2)' }}>{helper}</p> : null}
     </div>
   );
 }

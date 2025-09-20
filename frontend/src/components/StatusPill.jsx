@@ -11,7 +11,7 @@ export function StatusPill({
   if (active) {
     return (
       <Badge variant="success" className="flex items-center gap-2">
-        <span className={clsx(dotBase, "animate-pulse bg-emerald-300")} />
+        <span className={clsx(dotBase)} style={{ backgroundColor: 'var(--tone-success-dot)' }} />
         {labelActive}
       </Badge>
     );
@@ -19,7 +19,7 @@ export function StatusPill({
 
   return (
     <Badge variant="danger" className="flex items-center gap-2">
-      <span className={clsx(dotBase, "bg-rose-300")} />
+      <span className={clsx(dotBase)} style={{ backgroundColor: 'var(--tone-danger-dot)' }} />
       {labelInactive}
     </Badge>
   );

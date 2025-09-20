@@ -9,7 +9,7 @@ function createSessionMiddleware() {
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: config.nodeEnv === 'production',
+      secure: (config.nodeEnv === 'production' && /^https:/i.test(config.webAppUrl || '')),
       maxAge: 1000 * 60 * 60 * 12, // 12 jam
     },
   });
@@ -18,3 +18,4 @@ function createSessionMiddleware() {
 module.exports = {
   createSessionMiddleware,
 };
+

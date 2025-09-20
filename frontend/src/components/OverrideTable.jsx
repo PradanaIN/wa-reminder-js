@@ -1,6 +1,5 @@
 import { Button } from "./ui/Button";
 import { EmptyState } from "./ui/EmptyState";
-import { Trash2 } from "lucide-react";
 
 export function OverrideTable({ overrides = [], onRemove }) {
   if (!overrides.length) {
@@ -55,3 +54,4 @@ export function OverrideTable({ overrides = [], onRemove }) {
     </div>
   );
 }
+

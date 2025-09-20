@@ -1,7 +1,6 @@
 import clsx from "clsx";
 
-const baseStyles =
-  "rounded-2xl border shadow-xl backdrop-blur-sm transition-all focus-within:ring-1";
+const baseStyles = "rounded-2xl border shadow-xl backdrop-blur-sm transition-all focus-within:ring-1 card-surface";
 
 const variants = {
   default: "border-white/5 bg-slate-900/70 shadow-slate-900/40",
@@ -25,15 +24,7 @@ export function Card({
   ...props
 }) {
   return (
-    <div
-      className={clsx(
-        baseStyles,
-        variants[variant],
-        paddings[padding],
-        className
-      )}
-      {...props}
-    >
+    <div className={clsx(baseStyles, variants[variant], paddings[padding], className)} style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)" }} {...props}>
       {header && (
         <div className="mb-4 border-b border-white/10 pb-3">{header}</div>
       )}
@@ -44,3 +35,5 @@ export function Card({
     </div>
   );
 }
+
+

@@ -16,3 +16,13 @@ export function useLogs(limit = 100) {
     refetchInterval: 15_000,
   });
 }
+
+export function useSystemStats() {
+  return {
+    ...useQuery({
+      queryKey: ['system', 'stats'],
+      queryFn: () => apiRequest('/api/system/stats'),
+      refetchInterval: 60_000,
+    }),
+  };
+}

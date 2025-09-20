@@ -1,7 +1,6 @@
 import { ScheduleGrid } from "./ScheduleGrid";
 import { Card } from "./ui/Card";
 import { DataPlaceholder } from "./ui/DataPlaceholder";
-import { CalendarDays } from "lucide-react";
 
 export function ScheduleOverview({ schedule, loading }) {
   // Loading state
@@ -75,3 +74,4 @@ export function ScheduleOverview({ schedule, loading }) {
     </Card>
   );
 }
+

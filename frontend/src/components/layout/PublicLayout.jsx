@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
+import { ThemeToggle } from "../ThemeToggle";
 
 export function PublicLayout({ children }) {
   return (
@@ -12,16 +13,18 @@ export function PublicLayout({ children }) {
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link
             to="/"
-            className="text-xl font-bold tracking-tight text-white hover:text-primary-400 transition-colors"
+            className="flex items-center gap-2 text-xl font-bold tracking-tight text-white hover:text-primary-400 transition-colors"
           >
-            WA Reminder
+            <img src="/logo.png" alt="SIGAP" className="h-7 w-7 rounded" />
+            <span>SIGAP 6502</span>
           </Link>
           <div className="flex items-center gap-6 text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <ThemeToggle />
             <a
               href="#status"
               className="hover:text-slate-100 transition-colors"
             >
-              Status Sistem
+              Status
             </a>
             <a
               href="#schedule"
@@ -33,7 +36,7 @@ export function PublicLayout({ children }) {
               to="/admin/login"
               className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-primary-500/20 transition hover:scale-105 hover:border-white/30 hover:bg-white/20 hover:shadow-primary-400/30"
             >
-              Masuk Admin
+              Admin
             </Link>
           </div>
         </nav>
@@ -46,11 +49,16 @@ export function PublicLayout({ children }) {
 
       {/* Footer */}
       <footer className="border-t border-white/5 bg-slate-950/80 pb-6 pt-10 text-sm text-slate-400 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            &copy; {new Date().getFullYear()} WA Reminder. Semua hak dilindungi.
-          </p>
-          <div className="flex gap-4">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 text-center sm:grid-cols-3 sm:items-center sm:text-left">
+          <div className="order-1 sm:order-1">
+            <p>&copy; 2025 BPS Kabupaten Bulungan</p>
+          </div>
+          <div className="order-3 sm:order-2">
+            <p className="text-slate-300">
+              Made with &#x2764;&#xfe0f; & &#x2615;
+            </p>
+          </div>
+          <div className="order-2 flex justify-center gap-4 sm:order-3 sm:justify-end">
             <a
               href="mailto:support@example.com"
               className="hover:text-slate-200 transition-colors"
@@ -58,7 +66,7 @@ export function PublicLayout({ children }) {
               Dukungan
             </a>
             <a
-              href="https://https://github.com/PradanaIN/wa-reminder-js"
+              href="https://github.com/PradanaIN/wa-reminder-js"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-slate-200 transition-colors"
