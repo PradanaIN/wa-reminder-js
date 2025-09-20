@@ -1,4 +1,5 @@
 *
 !.gitignore
+!calendar_local.json
 !contacts.json
 
