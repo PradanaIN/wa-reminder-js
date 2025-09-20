@@ -20,14 +20,20 @@ async function startBot() {
     return;
   }
 
+  const puppeteerOptions = {
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  };
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+
   client = new Client({
     authStrategy: new LocalAuth({
       dataPath: path.join(__dirname, "..", "..", "storage", "sessions"),
     }),
-    puppeteer: {
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    },
+    puppeteer: puppeteerOptions,
   });
 
   client.on("qr", (qr) => {
