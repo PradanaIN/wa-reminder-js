@@ -1,4 +1,5 @@
 const moment = require("moment-timezone");
+const config = require("../config/env");
 const { setupLogger } = require("../utils/logger");
 const { emitLogUpdate } = require("../utils/socketHandler");
 
@@ -8,7 +9,7 @@ const MAX_LOG_ENTRIES = 100;
 const logs = [];
 
 function addLog(text, level = "info") {
-  const time = moment().format("HH:mm:ss");
+  const time = moment().tz(config.timezone).format("HH:mm:ss");
   const logEntry = `[${time}] ${text}`;
 
   if (logs.length >= MAX_LOG_ENTRIES) {
@@ -45,7 +46,7 @@ function getStats() {
   };
 
   for (const log of logs) {
-    const todayStr = moment().format("YYYY-MM-DD");
+    const todayStr = moment().tz(config.timezone).format("YYYY-MM-DD");
 
     if (log.includes("Pesan") || log.includes("Mengirim ke")) {
       stats.messagesPerDay[todayStr] =
