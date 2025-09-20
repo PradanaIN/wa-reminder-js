@@ -1,0 +1,74 @@
+[
+  {
+    "id": "pegawai-ari-prasetyo",
+    "name": "Ari Prasetyo",
+    "number": "6289511111001",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-bella-maharani",
+    "name": "Bella Maharani",
+    "number": "6289511111002",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-candra-wibowo",
+    "name": "Candra Wibowo",
+    "number": "6289511111003",
+    "status": "dinas"
+  },
+  {
+    "id": "pegawai-dewi-lestari",
+    "name": "Dewi Lestari",
+    "number": "6289511111004",
+    "status": "cuti"
+  },
+  {
+    "id": "pegawai-edi-susanto",
+    "name": "Edi Susanto",
+    "number": "6289511111005",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-farah-nabila",
+    "name": "Farah Nabila",
+    "number": "6289511111006",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-gilang-pradipta",
+    "name": "Gilang Pradipta",
+    "number": "6289511111007",
+    "status": "izin"
+  },
+  {
+    "id": "pegawai-hanna-oktaviani",
+    "name": "Hanna Oktaviani",
+    "number": "6289511111008",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-indra-lesmana",
+    "name": "Indra Lesmana",
+    "number": "6289511111009",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-jasmine-putri",
+    "name": "Jasmine Putri",
+    "number": "6289511111010",
+    "status": "libur"
+  },
+  {
+    "id": "pegawai-khalid-mubarok",
+    "name": "Khalid Mubarok",
+    "number": "6289511111011",
+    "status": "masuk"
+  },
+  {
+    "id": "pegawai-laras-ayu",
+    "name": "Laras Ayu",
+    "number": "6289511111012",
+    "status": "masuk"
+  }
+]
