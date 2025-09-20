@@ -8,7 +8,7 @@ import {
 } from "../queries/schedule";
 import { BotControlPanel } from "../components/BotControlPanel";
 import { LogsPanel } from "../components/LogsPanel";
-import { NextRunCard } from "../components/NextRunCard";
+import { NextRunCard as NextRunCard } from "../components/NextRunCard2.jsx";
 import { ScheduleGrid } from "../components/ScheduleGrid";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -18,6 +18,7 @@ import { Label } from "../components/ui/Label";
 import { Spinner } from "../components/ui/Spinner";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { useToast } from "../components/ui/ToastProvider.jsx";
+import { useConfirm } from "../components/ui/ConfirmProvider.jsx";
 import { MetricCard } from "../components/ui/MetricCard";
 
 const DEFAULT_TIMES = {
@@ -34,6 +35,8 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
   const logoutMutation = useLogout();
+  const { add: addToast } = useToast();
+  const { confirm } = useConfirm();
 
   const {
     data: scheduleResponse,
@@ -236,7 +239,13 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <form className="space-y-6" onSubmit={handleScheduleSubmit}>
-                    <ScheduleGrid values={dailyTimes} onChange={setDailyTimes} />
+                    {(() => {
+                      const tzMap = { 'Asia/Makassar': 'WITA', 'Asia/Jakarta': 'WIB', 'Asia/Jayapura': 'WIT' };
+                      const suffix = tzMap[timezone] || undefined;
+                      return (
+                        <ScheduleGrid values={dailyTimes} onChange={setDailyTimes} timeSuffix={suffix} />
+                      );
+                    })()}
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
@@ -264,9 +273,14 @@ export default function AdminDashboardPage() {
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => {
+                        onClick={async () => {
                           if (!schedule) return;
-                          const ok = window.confirm("Reset perubahan jadwal? Perubahan belum disimpan akan hilang.");
+                          const ok = await confirm({
+                            title: 'Reset perubahan?',
+                            message: 'Perubahan yang belum disimpan akan hilang.',
+                            confirmText: 'Ya, reset',
+                            variant: 'warning',
+                          });
                           if (!ok) return;
                           setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) });
                           addToast("Perubahan jadwal direset.", { type: "info" });
@@ -294,9 +308,14 @@ export default function AdminDashboardPage() {
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() => {
+                    onClick={async () => {
                       if (!schedule) return;
-                      const ok = window.confirm("Reset perubahan jadwal?");
+                      const ok = await confirm({
+                        title: 'Reset perubahan?',
+                        message: 'Perubahan yang belum disimpan akan hilang.',
+                        confirmText: 'Ya, reset',
+                        variant: 'warning',
+                      });
                       if (!ok) return;
                       setDailyTimes({ ...DEFAULT_TIMES, ...(schedule.dailyTimes || {}) });
                       setTimezone(schedule.timezone || "Asia/Makassar");
@@ -316,4 +335,3 @@ export default function AdminDashboardPage() {
     </AdminLayout>
   );
 }
-  const { add: addToast } = useToast();

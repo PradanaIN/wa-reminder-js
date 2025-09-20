@@ -5,6 +5,7 @@ import { Button } from "../ui/Button";
 import { ThemeToggle } from "../ThemeToggle";
 import { Drawer } from "../ui/Drawer";
 import { Home, Sliders, Users, Calendar as CalIcon, FileText, LogOut, Menu } from "../ui/icons";
+import { useConfirm } from "../ui/ConfirmProvider.jsx";
 
 export function AdminLayout({
   username = "Admin",
@@ -13,6 +14,7 @@ export function AdminLayout({
   loading = false,
   children,
 }) {
+  const { confirm } = useConfirm();
   const { pathname } = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -22,6 +24,7 @@ export function AdminLayout({
     { to: "/admin/contacts", label: "Kontak", icon: Users },
     { to: "/admin/holidays", label: "Kalender", icon: CalIcon },
     { to: "/admin/templates", label: "Template", icon: FileText },
+    { to: "/admin/quotes", label: "Quotes", icon: FileText },
   ];
 
   const NavList = ({ onNavigate }) => (
@@ -79,7 +82,10 @@ export function AdminLayout({
               <Button
                 variant="danger"
                 size="sm"
-                onClick={onLogout}
+                onClick={async () => {
+                  const ok = await confirm({ title: 'Keluar akun?', message: 'Anda akan keluar dari dashboard admin.', confirmText: 'Keluar', variant: 'danger' });
+                  if (ok) onLogout();
+                }}
                 disabled={isLoggingOut}
                 className="h-9"
               >
@@ -92,7 +98,7 @@ export function AdminLayout({
       </header>
 
       {/* Layout with sidebar */}
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 md:grid-cols-[160px_minmax(0,1fr)]">
         {/* Static sidebar for md+ */}
         <aside className="sticky top-[64px] hidden h-[calc(100vh-64px)] flex-col gap-4 border-r border-white/10 bg-slate-950/60 px-3 py-4 md:flex">
           <NavList />

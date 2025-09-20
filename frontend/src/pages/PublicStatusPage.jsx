@@ -325,7 +325,7 @@ export default function PublicStatusPage() {
                       {schedule?.timezone ?? "yang ditentukan"}.
                     </p>
                   </div>
-                  <ScheduleGrid readOnly values={dailyTimes} />
+                  <ScheduleGrid readOnly values={dailyTimes} timeSuffix={(schedule?.timezone === 'Asia/Makassar' && 'WITA') || (schedule?.timezone === 'Asia/Jakarta' && 'WIB') || (schedule?.timezone === 'Asia/Jayapura' && 'WIT') || undefined} />
                   {schedule?.paused && (
                     <div className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-100">
                       Penjadwalan otomatis sementara dijeda. Override manual

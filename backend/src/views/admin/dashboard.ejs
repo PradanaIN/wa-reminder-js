@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Admin - WA Reminder</title>
     <link rel="stylesheet" href="/styles/admin.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
   </head>
   <body class="dashboard-body">
     <header class="dashboard-header">
@@ -97,6 +98,7 @@
       <pre class="log-viewer"><%= logs.join('\n') %></pre>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
     <script src="/scripts/admin-dashboard.js" type="module"></script>
   </body>
 </html>

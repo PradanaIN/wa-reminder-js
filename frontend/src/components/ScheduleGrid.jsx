@@ -19,6 +19,7 @@ export function ScheduleGrid({
   onChange,
   readOnly = false,
   loading = false,
+  timeSuffix,
 }) {
   // Loading state
   if (loading) {
@@ -66,20 +67,29 @@ export function ScheduleGrid({
 
             {readOnly ? (
               <p className="text-lg font-semibold text-white">
-                {value ? `${value} WITA` : (Number(day) >= 6 ? "Libur" : "Tidak dijadwalkan")}
+                {value
+                  ? `${value}${timeSuffix ? ` ${timeSuffix}` : ""}`
+                  : Number(day) >= 6
+                  ? "Libur"
+                  : "Tidak dijadwalkan"}
               </p>
             ) : (
-              <Input
-                id={`day-${day}`}
-                type="time"
-                value={value || ""}
-                onChange={(event) =>
-                  onChange({
-                    ...values,
-                    [day]: event.target.value || null,
-                  })
-                }
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  id={`day-${day}`}
+                  type="time"
+                  value={value || ""}
+                  onChange={(event) =>
+                    onChange({
+                      ...values,
+                      [day]: event.target.value || null,
+                    })
+                  }
+                />
+                {timeSuffix ? (
+                  <span className="text-sm font-medium text-slate-400">{timeSuffix}</span>
+                ) : null}
+              </div>
             )}
 
             {!readOnly && (

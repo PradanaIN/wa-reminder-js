@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/ToastProvider.jsx';
 import { useSession, useLogout } from '../queries/auth';
+import { useConfirm } from '../components/ui/ConfirmProvider.jsx';
 import {
   useAdminContacts,
   useCreateContact,
@@ -21,6 +22,7 @@ import {
 export default function AdminContactsPage() {
   const navigate = useNavigate();
   const { add: addToast } = useToast();
+  const { confirm } = useConfirm();
   const { data: session, isLoading: sessionLoading } = useSession();
   const logoutMutation = useLogout();
 
@@ -82,16 +84,16 @@ export default function AdminContactsPage() {
     setFormOpen(true);
   };
 
-  const handleCancel = () => {
-    const ok = window.confirm('Batalkan perubahan?');
+  const handleCancel = async () => {
+    const ok = await confirm({ title: 'Batalkan?', message: 'Perubahan yang belum disimpan akan hilang.', confirmText: 'Ya, batal', variant: 'warning' });
     if (!ok) return;
     setEditingContact(null);
     setFormOpen(false);
   };
 
-  const handleDelete = (contact) => {
+  const handleDelete = async (contact) => {
     if (!contact?.id) return;
-    const confirmed = window.confirm(`Hapus kontak ${contact.name}?`);
+    const confirmed = await confirm({ title: 'Hapus kontak?', message: `Kontak ${contact.name} akan dihapus.`, confirmText: 'Hapus', variant: 'danger' });
     if (!confirmed) return;
     deleteMutation.mutate(contact.id, {
       onSuccess: () => {

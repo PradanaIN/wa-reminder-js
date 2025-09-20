@@ -3,6 +3,7 @@ import PublicStatusPage from './pages/PublicStatusPage.jsx';
 import AdminLoginPage from './pages/AdminLoginPage.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminTemplatesPage from './pages/AdminTemplatesPage.jsx';
+import AdminQuotesPage from './pages/AdminQuotesPage.jsx';
 import AdminHolidaysPage from './pages/AdminHolidaysPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import AdminOverridesPage from './pages/AdminOverridesPage.jsx';
@@ -10,6 +11,7 @@ import AdminContactsPage from './pages/AdminContactsPage.jsx';
 import { useSession } from './queries/auth.js';
 import { Spinner } from './components/ui/Spinner.jsx';
 import { ToastProvider } from './components/ui/ToastProvider.jsx';
+import { ConfirmProvider } from './components/ui/ConfirmProvider.jsx';
 
 function ProtectedRoute({ children }) {
   const { data, error, isLoading } = useSession();
@@ -45,7 +47,8 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <ToastProvider>
+    <ConfirmProvider>
+      <ToastProvider>
       <Routes>
         <Route path="/" element={<PublicStatusPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -57,14 +60,22 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin/templates"
-          element={
-            <ProtectedRoute>
-              <AdminTemplatesPage />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/admin/templates"
+        element={
+          <ProtectedRoute>
+            <AdminTemplatesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/quotes"
+        element={
+          <ProtectedRoute>
+            <AdminQuotesPage />
+          </ProtectedRoute>
+        }
+      />
         <Route
           path="/admin/contacts"
           element={
@@ -91,7 +102,8 @@ export default function App() {
         />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </ToastProvider>
+      </ToastProvider>
+    </ConfirmProvider>
   );
 }
 

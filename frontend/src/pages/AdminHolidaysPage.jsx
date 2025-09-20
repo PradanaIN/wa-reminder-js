@@ -11,6 +11,7 @@ import { Spinner } from '../components/ui/Spinner';
 import { Modal } from '../components/ui/Modal';
 import { Trash } from '../components/ui/icons';
 import { useToast } from '../components/ui/ToastProvider.jsx';
+import { useConfirm } from '../components/ui/ConfirmProvider.jsx';
 
 function arraysEqual(left = [], right = []) {
   if (left.length !== right.length) return false;
@@ -19,6 +20,7 @@ function arraysEqual(left = [], right = []) {
 
 export default function AdminHolidaysPage() {
   const { add: addToast } = useToast();
+  const { confirm } = useConfirm();
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
   const {
@@ -37,6 +39,9 @@ export default function AdminHolidaysPage() {
   const [formError, setFormError] = useState('');
   const [activeTab, setActiveTab] = useState('holidays'); // 'holidays' | 'joint'
   const [addOpen, setAddOpen] = useState(false);
+  const [holidaysPage, setHolidaysPage] = useState(1);
+  const [jointPage, setJointPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     if (!sessionLoading && !session?.authenticated) {
@@ -98,8 +103,8 @@ export default function AdminHolidaysPage() {
     setJointLeaveInput('');
   };
 
-  const handleRemoveHoliday = (date) => {
-    const ok = window.confirm(`Hapus tanggal libur ${date}?`);
+  const handleRemoveHoliday = async (date) => {
+    const ok = await confirm({ title: 'Hapus hari libur?', message: `Tanggal ${date} akan dihapus.`, confirmText: 'Hapus', variant: 'danger' });
     if (!ok) return;
     setFormError('');
     updateMutation.reset();
@@ -107,8 +112,8 @@ export default function AdminHolidaysPage() {
     addToast('Tanggal libur dihapus dari daftar.', { type: 'success' });
   };
 
-  const handleRemoveJointLeave = (date) => {
-    const ok = window.confirm(`Hapus tanggal cuti bersama ${date}?`);
+  const handleRemoveJointLeave = async (date) => {
+    const ok = await confirm({ title: 'Hapus cuti bersama?', message: `Tanggal ${date} akan dihapus.`, confirmText: 'Hapus', variant: 'danger' });
     if (!ok) return;
     setFormError('');
     updateMutation.reset();
@@ -131,15 +136,26 @@ export default function AdminHolidaysPage() {
     );
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!calendar) return;
-    const ok = window.confirm('Reset perubahan kalender?');
+    const ok = await confirm({ title: 'Reset kalender?', message: 'Kembalikan ke data tersimpan.', confirmText: 'Ya, reset', variant: 'warning' });
     if (!ok) return;
     setFormError('');
     updateMutation.reset();
     setHolidays([...(calendar.LIBURAN ?? [])].sort());
     setJointLeaves([...(calendar.CUTI_BERSAMA ?? [])].sort());
     addToast('Perubahan kalender direset.', { type: 'info' });
+  };
+
+  const handleCancelAdd = async () => {
+    const ok = await confirm({ title: 'Tutup formulir?', message: 'Perubahan yang belum disimpan akan hilang.', confirmText: 'Tutup', variant: 'warning' });
+    if (!ok) return;
+    setAddOpen(false);
+    if (activeTab === 'holidays') {
+      setHolidayInput('');
+    } else {
+      setJointLeaveInput('');
+    }
   };
 
   const isCalendarPending = calendarLoading && !calendar;
@@ -184,7 +200,7 @@ export default function AdminHolidaysPage() {
                     {holidays.length === 0 ? (
                       <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">Belum ada tanggal yang terdaftar.</li>
                     ) : (
-                      holidays.map((date) => (
+                      holidays.slice((holidaysPage-1)*pageSize, (holidaysPage-1)*pageSize + pageSize).map((date) => (
                         <li key={date} className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm">
                           <span className="font-medium text-slate-100">{date}</span>
                           <Button type="button" variant="danger" outline size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => handleRemoveHoliday(date)} aria-label="Hapus">
@@ -194,6 +210,18 @@ export default function AdminHolidaysPage() {
                       ))
                     )}
                   </ul>
+                  {holidays.length > pageSize && (
+                    <div className="flex items-center justify-between pt-2 text-xs text-slate-400">
+                      <span>
+                        Menampilkan {Math.min((holidaysPage-1)*pageSize+1, holidays.length)}–{Math.min(holidaysPage*pageSize, holidays.length)} dari {holidays.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button variant="secondary" size="sm" onClick={() => setHolidaysPage((p) => Math.max(1, p-1))} disabled={holidaysPage<=1}>Sebelumnya</Button>
+                        <span className="px-2">Hal {holidaysPage} / {Math.ceil(holidays.length/pageSize)}</span>
+                        <Button variant="secondary" size="sm" onClick={() => setHolidaysPage((p) => Math.min(Math.ceil(holidays.length/pageSize), p+1))} disabled={holidaysPage>=Math.ceil(holidays.length/pageSize)}>Berikutnya</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -202,7 +230,7 @@ export default function AdminHolidaysPage() {
                     {jointLeaves.length === 0 ? (
                       <li className="rounded-xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">Belum ada tanggal yang terdaftar.</li>
                     ) : (
-                      jointLeaves.map((date) => (
+                      jointLeaves.slice((jointPage-1)*pageSize, (jointPage-1)*pageSize + pageSize).map((date) => (
                         <li key={date} className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2 text-sm">
                           <span className="font-medium text-slate-100">{date}</span>
                           <Button type="button" variant="danger" outline size="sm" className="h-8 w-8 rounded-lg p-0" onClick={() => handleRemoveJointLeave(date)} aria-label="Hapus">
@@ -212,6 +240,18 @@ export default function AdminHolidaysPage() {
                       ))
                     )}
                   </ul>
+                  {jointLeaves.length > pageSize && (
+                    <div className="flex items-center justify-between pt-2 text-xs text-slate-400">
+                      <span>
+                        Menampilkan {Math.min((jointPage-1)*pageSize+1, jointLeaves.length)}–{Math.min(jointPage*pageSize, jointLeaves.length)} dari {jointLeaves.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button variant="secondary" size="sm" onClick={() => setJointPage((p) => Math.max(1, p-1))} disabled={jointPage<=1}>Sebelumnya</Button>
+                        <span className="px-2">Hal {jointPage} / {Math.ceil(jointLeaves.length/pageSize)}</span>
+                        <Button variant="secondary" size="sm" onClick={() => setJointPage((p) => Math.min(Math.ceil(jointLeaves.length/pageSize), p+1))} disabled={jointPage>=Math.ceil(jointLeaves.length/pageSize)}>Berikutnya</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -228,7 +268,7 @@ export default function AdminHolidaysPage() {
           )}
         </Card>
 
-        <Modal open={addOpen} onClose={() => setAddOpen(false)} title={activeTab === 'holidays' ? 'Tambah Hari Libur' : 'Tambah Cuti Bersama'}>
+        <Modal open={addOpen} onClose={handleCancelAdd} title={activeTab === 'holidays' ? 'Tambah Hari Libur' : 'Tambah Cuti Bersama'}>
           <div className="space-y-4">
             <Label htmlFor="date-input">Tanggal</Label>
             <Input
@@ -254,7 +294,7 @@ export default function AdminHolidaysPage() {
               >
                 Tambah
               </Button>
-              <Button type="button" variant="danger" outline onClick={() => setAddOpen(false)}>Batal</Button>
+              <Button type="button" variant="danger" outline onClick={handleCancelAdd}>Batal</Button>
             </div>
           </div>
         </Modal>

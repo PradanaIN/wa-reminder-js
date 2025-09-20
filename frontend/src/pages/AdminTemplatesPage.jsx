@@ -9,9 +9,11 @@ import { Label } from '../components/ui/Label';
 import { Input } from '../components/ui/Input';
 import { Spinner } from '../components/ui/Spinner';
 import { useToast } from '../components/ui/ToastProvider.jsx';
+import { useConfirm } from '../components/ui/ConfirmProvider.jsx';
 
 export default function AdminTemplatesPage() {
   const { add: addToast } = useToast();
+  const { confirm } = useConfirm();
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data, isLoading } = useTemplate();
@@ -89,8 +91,8 @@ export default function AdminTemplatesPage() {
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() => {
-                        const ok = window.confirm('Reset isi template ke versi tersimpan?');
+                      onClick={async () => {
+                        const ok = await confirm({ title: 'Reset template?', message: 'Kembalikan ke versi tersimpan.', confirmText: 'Ya, reset', variant: 'warning' });
                         if (!ok) return;
                         setTemplate(data?.template || '');
                         addToast('Perubahan template direset.', { type: 'info' });

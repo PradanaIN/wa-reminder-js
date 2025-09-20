@@ -33,7 +33,15 @@ actions.forEach((button) => {
       updateStatus(Boolean(result.active));
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan: ' + err.message);
+      if (window.Swal) {
+        window.Swal.fire({
+          icon: 'error',
+          title: 'Terjadi kesalahan',
+          text: err?.message || 'Permintaan gagal',
+        });
+      } else {
+        alert('Terjadi kesalahan: ' + err.message);
+      }
     } finally {
       button.disabled = false;
       button.classList.remove('is-loading');

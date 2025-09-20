@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { quotes } = require('../utils/quotes');
+const { getRandomQuote } = require('../utils/quotes');
 const { resetHeartbeat } = require('../utils/heartbeat');
 const { getAllContacts } = require('../services/contactService');
 
@@ -34,9 +34,7 @@ function loadMessageTemplate() {
   }
 }
 
-function getRandomQuote() {
-  return quotes[Math.floor(Math.random() * quotes.length)];
-}
+// getRandomQuote now reads from file per-use via utils/quotes
 
 async function sendMessage(number, message, client) {
   const chatId = number.includes('@c.us') ? number : `${number}@c.us`;
@@ -46,7 +44,7 @@ async function sendMessage(number, message, client) {
 async function sendMessageToNumber(client, number, name, addLog = console.log) {
   try {
     const template = loadMessageTemplate();
-    const quote = getRandomQuote();
+    const quote = await getRandomQuote();
     const message = template.replace('{name}', name).replace('{quote}', quote);
 
     const chatId = number.includes('@c.us') ? number : `${number}@c.us`;

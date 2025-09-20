@@ -12,6 +12,7 @@ const calendarAdminRoutes = require('./calendarAdminRoutes');
 const adminBotRoutes = require('./adminBotRoutes');
 const adminContactRoutes = require('./adminContactRoutes');
 const webRoutes = require('./webRoutes');
+const quotesRoutes = require('./quotesRoutes');
 
 function registerRoutes(app) {
   app.use('/api/auth', authRoutes);
@@ -24,6 +25,7 @@ function registerRoutes(app) {
   app.use('/api/admin/calendar', requireAdmin, calendarAdminRoutes);
   app.use('/api/admin/schedule', requireAdmin, scheduleAdminRoutes);
   app.use('/api/admin/contacts', requireAdmin, adminContactRoutes);
+  app.use('/api/quotes', quotesRoutes);
   app.use('/api/schedule', schedulePublicRoutes);
   app.use('/', webRoutes);
 

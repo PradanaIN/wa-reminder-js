@@ -141,10 +141,7 @@ export function ContactForm({
               type="button"
               variant="danger"
               outline
-              onClick={() => {
-                const ok = window.confirm('Batalkan perubahan?');
-                if (ok) onCancel?.();
-              }}
+              onClick={() => onCancel?.()}
               disabled={isSubmitting}
             >
               Batal
