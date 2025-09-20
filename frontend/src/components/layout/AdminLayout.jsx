@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { ThemeToggle } from "../ThemeToggle";
@@ -10,8 +11,15 @@ export function AdminLayout({
   children,
 }) {
   const { pathname } = useLocation();
+  const tabBaseClass =
+    "inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500";
   const isActive = (p) =>
-    pathname.startsWith(p) ? "text-white" : "text-slate-300 hover:text-white";
+    clsx(
+      tabBaseClass,
+      pathname.startsWith(p)
+        ? "bg-white/15 text-white shadow-sm"
+        : "text-slate-300 hover:text-white hover:bg-white/5"
+    );
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
@@ -19,7 +27,7 @@ export function AdminLayout({
       <div className="pointer-events-none absolute inset-x-0 top-[12%] -z-10 h-72 bg-gradient-to-r from-primary-500/25 via-sky-500/20 to-purple-500/25 blur-3xl" />
 
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:gap-4 sm:py-4">
           <Link
             to="/"
             className="flex items-center text-lg font-semibold tracking-tight text-white"
@@ -27,8 +35,8 @@ export function AdminLayout({
             <img src="/logo.png" alt="SIGAP" className="mr-2 h-6 w-6 rounded" />
             <span>SIGAP 6502</span>
           </Link>
-          <div className="flex items-center gap-4 text-sm text-slate-300">
-            <ThemeToggle />
+          <div className="flex items-center gap-3 text-sm text-slate-300 sm:gap-4">
+            <ThemeToggle className="h-9 rounded-xl border border-white/10 bg-slate-900/60 px-3" />
             {loading ? (
               <div className="hidden h-4 w-32 animate-pulse rounded-full bg-slate-800/70 sm:block" />
             ) : (
@@ -39,8 +47,10 @@ export function AdminLayout({
             ) : (
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={onLogout}
                 disabled={isLoggingOut}
+                className="h-9"
               >
                 {isLoggingOut ? "Keluar..." : "Keluar"}
               </Button>
@@ -48,7 +58,7 @@ export function AdminLayout({
           </div>
         </nav>
         <div className="mx-auto max-w-6xl px-4 pb-3">
-          <div className="flex gap-6 text-xs font-semibold uppercase tracking-wide">
+          <div className="flex gap-2 overflow-x-auto pb-1 sm:gap-3">
             <Link
               to="/admin/dashboard"
               className={isActive("/admin/dashboard")}
