@@ -32,7 +32,12 @@ export function BotControlPanel() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button variant="success" <Button disabled={starting || active} type="button" onClick={() => startMutation.mutate()}>
+          <Button
+            variant="success"
+            disabled={starting || active}
+            type="button"
+            onClick={() => startMutation.mutate()}
+          >
             {starting && <Spinner size="sm" className="mr-2" />}
             {starting ? "Mengaktifkan..." : "Start Bot"}
           </Button>
